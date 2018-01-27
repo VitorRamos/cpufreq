@@ -1,0 +1,1 @@
+from cpufreq import CPUFreq
