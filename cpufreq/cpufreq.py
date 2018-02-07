@@ -37,6 +37,15 @@ class CPUFreq:
 	def get_frequencies(self):
 		return self.frequencies	
 
+	def get_current_frequencies(self, cpu= -1):
+		if cpu == -1:
+			return self.readFromCPUFiles('cpuinfo_cur_freq')
+		else:
+			f= open(self.basedir+"/cpu"+str(cpu)+"/cpufreq/cpuinfo_cur_freq", "r")
+			frs= f.read()
+			f.close()
+			return frs
+
 	def list_governos(self):
 		for cpu in self.governos:
 			print cpu['cpu'], cpu['data']
@@ -69,7 +78,7 @@ class CPUFreq:
 	def change_frequency(self, freq, cpu= -1):
 		if not freq in self.frequencies[0]['data']:
 			return
-
+		self.change_max_frequency(freq, cpu=cpu)
 		if cpu == -1:
 			self.writeOnCPUFiles('scaling_setspeed', freq)
 		else:
@@ -79,6 +88,16 @@ class CPUFreq:
 			except IOError:
 				print "Error: File does not appear to exist.", self.basedir+"/cpu"+str(cpu)+"/cpufreq/scaling_setspeed"
 	
+	def change_max_frequency(self, freq, cpu= -1):
+		if cpu == -1:
+			self.writeOnCPUFiles('scaling_max_freq', freq)
+		else:
+			try:
+				gov= open(self.basedir+"/cpu"+str(cpu)+"/cpufreq/scaling_max_freq", "wb")
+				gov.write(freq)
+			except IOError:
+				print "Error: File does not appear to exist.", self.basedir+"/cpu"+str(cpu)+"/cpufreq/scaling_max_freq"	
+
 	def disable_cpu(self, cpu):
 		try:
 			on= open(self.basedir+"/cpu"+str(cpu)+"/online", "r+b")
