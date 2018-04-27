@@ -9,7 +9,7 @@ cpu.change_governo("userspace")
 cpu.get_frequencies()  # list of possible frequencies for all cpus
 freq = cpu.get_frequencies()[0]['data']  # cpu frequencies
 for f in freq:
-    print("Frequency %d" % f)
+    print("Frequency %s" % f)
     cpu.change_frequency(f)  # change frequency all cpus
     cpu.list_current_frequencies()
     time.sleep(1)
