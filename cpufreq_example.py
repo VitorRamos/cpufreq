@@ -18,7 +18,10 @@ cpu.change_governo("ondemand")
 cpu.list_current_governos()
 cpu.list_current_frequencies()
 
-cpu.disable_cpu(3)
+c = 3
+print("Disabling the core %d" % c)
+cpu.disable_cpu(c)
 time.sleep(5)
-cpu.enable_cpu(3)
+print("Enabling the core %d" % c)
+cpu.enable_cpu(c)
 time.sleep(5)
