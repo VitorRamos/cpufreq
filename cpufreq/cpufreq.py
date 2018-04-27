@@ -8,8 +8,14 @@
 from os import listdir
 from os import path
 import re
-from ._common import BASEDIR, GOVERNORINFOFILE, \
-    FREQINFOFILE, FREQDIR, FREQCURINFO, FREQSET,GOVERNORSET
+from ._common import LINUX
+from ._common import BASEDIR
+from ._common import GOVERNORINFOFILE
+from ._common import FREQINFOFILE
+from ._common import FREQDIR
+from ._common import FREQCURINFO
+from ._common import FREQSET
+from ._common import GOVERNORSET
 
 
 class CPUFreq:
@@ -45,13 +51,16 @@ class CPUFreq:
 
         """
 
-        self.basedir = BASEDIR
-        self.freqdir = FREQDIR
-        self.freqcurfile = FREQCURINFO
-        self.freqsetfile = FREQSET
-        self.governorsetfile = GOVERNORSET
-        self.governos = self.readFromCPUFiles(GOVERNORINFOFILE)
-        self.frequencies = self.readFromCPUFiles(FREQINFOFILE)
+        if LINUX:
+            self.basedir = BASEDIR
+            self.freqdir = FREQDIR
+            self.freqcurfile = FREQCURINFO
+            self.freqsetfile = FREQSET
+            self.governorsetfile = GOVERNORSET
+            self.governos = self.read_from_cpufiles(GOVERNORINFOFILE)
+            self.frequencies = self.read_from_cpufiles(FREQINFOFILE)
+        else:
+            print("This module should be used only on Linux!")
 
     def get_governos(self):
         """
@@ -71,7 +80,7 @@ class CPUFreq:
 
         return self.frequencies
 
-    def readFromCPUFiles(self, filename):
+    def read_from_cpufiles(self, filename):
         """
         Read the available governos from system cpu info file.
 
@@ -83,10 +92,10 @@ class CPUFreq:
         cpus = []
         for ldir in listdir(self.basedir):
             if re.match('cpu[0-9]', ldir):
+                fp = path.join(self.basedir, ldir, self.freqdir, filename)
                 try:
-                    fp = path.join(self.basedir, ldir, self.freqdir, filename)
                     with open(fp, "rb") as f:
-                        data = filter(None, f.read().rstrip('\n').split(' '))
+                        data = [i for i in f.read().split()]
                     cpu['cpu'] = int(ldir.strip('cpu'))
                     cpu['data'] = data
                     cpus.append(cpu.copy())
@@ -95,7 +104,7 @@ class CPUFreq:
                           "or permission error." % fp)
         return cpus
 
-    def writeOnCPUFiles(self, filename, data):
+    def write_on_cpufiles(self, filename, data):
         """
         Write a data in a governo cpu file.
 
@@ -105,8 +114,8 @@ class CPUFreq:
 
         for ldir in listdir(self.basedir):
             if re.match('cpu[0-9]', ldir):
+                fp = path.join(self.basedir, ldir, self.freqdir, filename)
                 try:
-                    fp = path.join(self.basedir, ldir, self.freqdir, filename)
                     with open(fp, "wb") as f:
                         f.write(data)
                 except IOError:
@@ -122,10 +131,10 @@ class CPUFreq:
         """
 
         if cpu == -1:
-            return self.readFromCPUFiles(self.freqcurfile)
+            return self.read_from_cpufiles(self.freqcurfile)
         else:
             fp = path.join(self.basedir, "cpu%d" % cpu,
-                      self.freqdir, self.freqcurfile)
+                           self.freqdir, self.freqcurfile)
             with open(fp, "r") as f:
                 frs = f.read()
             return frs
@@ -157,7 +166,7 @@ class CPUFreq:
         :return
         """
 
-        for cpu in self.readFromCPUFiles(self.governorsetfile):
+        for cpu in self.read_from_cpufiles(self.governorsetfile):
             print(cpu['cpu'], cpu['data'])
 
     def list_current_frequencies(self):
@@ -167,7 +176,7 @@ class CPUFreq:
         :return
         """
 
-        for cpu in self.readFromCPUFiles(self.freqcurfile):
+        for cpu in self.read_from_cpufiles(self.freqcurfile):
             print(cpu['cpu'], cpu['data'])
 
     def change_governo(self, name, cpu=-1):
@@ -182,11 +191,11 @@ class CPUFreq:
         if name not in self.governos[0]['data']:
             return
         if cpu == -1:
-            self.writeOnCPUFiles(self.governorsetfile, name)
+            self.write_on_cpufiles(self.governorsetfile, name)
         else:
+            fp = path.join(self.basedir, "cpu%d" % cpu,
+                           self.freqdir, self.governorsetfile)
             try:
-                fp = path.join(self.basedir, "cpu%d" % cpu,
-                          self.freqdir, self.governorsetfile)
                 with open(fp, "wb") as f:
                     f.write(name)
             except IOError:
@@ -206,11 +215,11 @@ class CPUFreq:
             return
         self.change_max_frequency(freq, cpu=cpu)
         if cpu == -1:
-            self.writeOnCPUFiles(self.freqsetfile, freq)
+            self.write_on_cpufiles(self.freqsetfile, freq)
         else:
+            fp = path.join(self.basedir, "cpu%d" % cpu,
+                           self.freqdir, self.freqsetfile)
             try:
-                fp = path.join(self.basedir, "cpu%d" % cpu,
-                          self.freqdir, self.freqsetfile)
                 with open(fp, "wb") as f:
                     f.write(freq)
             except IOError:
@@ -227,11 +236,11 @@ class CPUFreq:
         """
 
         if cpu == -1:
-            self.writeOnCPUFiles('scaling_max_freq', freq)
+            self.write_on_cpufiles('scaling_max_freq', freq)
         else:
+            fp = path.join(self.basedir, "cpu%d" % cpu,
+                           self.freqdir, "scaling_max_freq")
             try:
-                fp = path.join(self.basedir, "cpu%d" % cpu,
-                          self.freqdir, "scaling_max_freq")
                 with open(fp, "wb") as f:
                     f.write(freq)
             except IOError:
@@ -246,8 +255,8 @@ class CPUFreq:
         :return
         """
 
+        fp = path.join(self.basedir, "cpu%d" % cpu, "online")
         try:
-            fp = path.join(self.basedir, "cpu%d" % cpu, "online")
             with open(fp, "r+b") as f:
                 if '1' in f.read():
                     f.write("0")
@@ -263,12 +272,11 @@ class CPUFreq:
         :return
         """
 
+        fp = path.join(self.basedir, "cpu%d" % cpu, "online")
         try:
-            fp = path.join(self.basedir, "cpu%d" % cpu, "online")
             with open(fp, "r+b") as f:
                 if '0' in f.read():
                     f.write("1")
         except IOError:
             print("Error: File %s does not appear to exist "
                   "or permission error." % fp)
-
