@@ -1,5 +1,5 @@
 import sys
-from cpufreq import CPUFreq
+from .cpufreq import CPUFreq
 
 # If Python version is 3
 PY3 = sys.version_info[0] == 3
