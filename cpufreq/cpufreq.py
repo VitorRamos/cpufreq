@@ -94,7 +94,7 @@ class CPUFreq:
             if re.match('cpu[0-9]', ldir):
                 fp = path.join(self.basedir, ldir, self.freqdir, filename)
                 try:
-                    with open(fp, "rb") as f:
+                    with open(fp) as f:
                         data = [i for i in f.read().split()]
                     cpu['cpu'] = int(ldir.strip('cpu'))
                     cpu['data'] = data
@@ -116,7 +116,7 @@ class CPUFreq:
             if re.match('cpu[0-9]', ldir):
                 fp = path.join(self.basedir, ldir, self.freqdir, filename)
                 try:
-                    with open(fp, "wb") as f:
+                    with open(fp, "w") as f:
                         f.write(data)
                 except IOError:
                     print("Error: File %s does not appear to exist "
@@ -196,7 +196,7 @@ class CPUFreq:
             fp = path.join(self.basedir, "cpu%d" % cpu,
                            self.freqdir, self.governorsetfile)
             try:
-                with open(fp, "wb") as f:
+                with open(fp, "w") as f:
                     f.write(name)
             except IOError:
                 print("Error: File %s does not appear to exist "
@@ -220,7 +220,7 @@ class CPUFreq:
             fp = path.join(self.basedir, "cpu%d" % cpu,
                            self.freqdir, self.freqsetfile)
             try:
-                with open(fp, "wb") as f:
+                with open(fp, "w") as f:
                     f.write(freq)
             except IOError:
                 print("Error: File %s does not appear to exist "
@@ -241,7 +241,7 @@ class CPUFreq:
             fp = path.join(self.basedir, "cpu%d" % cpu,
                            self.freqdir, "scaling_max_freq")
             try:
-                with open(fp, "wb") as f:
+                with open(fp, "w") as f:
                     f.write(freq)
             except IOError:
                 print("Error: File %s does not appear to exist "
@@ -257,7 +257,7 @@ class CPUFreq:
 
         fp = path.join(self.basedir, "cpu%d" % cpu, "online")
         try:
-            with open(fp, "r+b") as f:
+            with open(fp, "r+") as f:
                 if '1' in f.read():
                     f.write("0")
         except IOError:
@@ -274,7 +274,7 @@ class CPUFreq:
 
         fp = path.join(self.basedir, "cpu%d" % cpu, "online")
         try:
-            with open(fp, "r+b") as f:
+            with open(fp, "r+") as f:
                 if '0' in f.read():
                     f.write("1")
         except IOError:
