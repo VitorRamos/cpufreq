@@ -6,9 +6,9 @@
 """
 
 from os import listdir
-from os.path import join
+from os import path
 import re
-from __init__ import BASEDIR, GOVERNORINFOFILE, \
+from ._common import BASEDIR, GOVERNORINFOFILE, \
     FREQINFOFILE, FREQDIR, FREQCURINFO, FREQSET,GOVERNORSET
 
 
@@ -84,7 +84,7 @@ class CPUFreq:
         for ldir in listdir(self.basedir):
             if re.match('cpu[0-9]', ldir):
                 try:
-                    fp = join(self.basedir, ldir, self.freqdir, filename)
+                    fp = path.join(self.basedir, ldir, self.freqdir, filename)
                     with open(fp, "rb") as f:
                         data = filter(None, f.read().rstrip('\n').split(' '))
                     cpu['cpu'] = int(ldir.strip('cpu'))
@@ -106,7 +106,7 @@ class CPUFreq:
         for ldir in listdir(self.basedir):
             if re.match('cpu[0-9]', ldir):
                 try:
-                    fp = join(self.basedir, ldir, self.freqdir, filename)
+                    fp = path.join(self.basedir, ldir, self.freqdir, filename)
                     with open(fp, "wb") as f:
                         f.write(data)
                 except IOError:
@@ -124,7 +124,7 @@ class CPUFreq:
         if cpu == -1:
             return self.readFromCPUFiles(self.freqcurfile)
         else:
-            fp = join(self.basedir, "cpu%d" % cpu,
+            fp = path.join(self.basedir, "cpu%d" % cpu,
                       self.freqdir, self.freqcurfile)
             with open(fp, "r") as f:
                 frs = f.read()
@@ -185,7 +185,7 @@ class CPUFreq:
             self.writeOnCPUFiles(self.governorsetfile, name)
         else:
             try:
-                fp = join(self.basedir, "cpu%d" % cpu,
+                fp = path.join(self.basedir, "cpu%d" % cpu,
                           self.freqdir, self.governorsetfile)
                 with open(fp, "wb") as f:
                     f.write(name)
@@ -209,7 +209,7 @@ class CPUFreq:
             self.writeOnCPUFiles(self.freqsetfile, freq)
         else:
             try:
-                fp = join(self.basedir, "cpu%d" % cpu,
+                fp = path.join(self.basedir, "cpu%d" % cpu,
                           self.freqdir, self.freqsetfile)
                 with open(fp, "wb") as f:
                     f.write(freq)
@@ -230,7 +230,7 @@ class CPUFreq:
             self.writeOnCPUFiles('scaling_max_freq', freq)
         else:
             try:
-                fp = join(self.basedir, "cpu%d" % cpu,
+                fp = path.join(self.basedir, "cpu%d" % cpu,
                           self.freqdir, "scaling_max_freq")
                 with open(fp, "wb") as f:
                     f.write(freq)
@@ -247,7 +247,7 @@ class CPUFreq:
         """
 
         try:
-            fp = join(self.basedir, "cpu%d" % cpu, "online")
+            fp = path.join(self.basedir, "cpu%d" % cpu, "online")
             with open(fp, "r+b") as f:
                 if '1' in f.read():
                     f.write("0")
@@ -264,7 +264,7 @@ class CPUFreq:
         """
 
         try:
-            fp = join(self.basedir, "cpu%d" % cpu, "online")
+            fp = path.join(self.basedir, "cpu%d" % cpu, "online")
             with open(fp, "r+b") as f:
                 if '0' in f.read():
                     f.write("1")
