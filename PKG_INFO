@@ -1,0 +1,15 @@
+Metadata-Version: 0.1
+Name: cpufreq
+Version: 0.1
+Summary: An tool to interface manage the cpus frequency on Linux Systems.
+Home-page: https://github.com/VitorRamos/cpufreq
+Author: Vitor Ramos
+Author-email: ramos.vitor89@gmail.com
+License: MIT
+Description: Description...
+
+Keywords: example documentation tutorial
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Topic :: Utilities
+Classifier: License :: MIT License
