@@ -46,12 +46,12 @@ class CPUFreq:
         """
 
         self.basedir = BASEDIR
-        self.governos = self.readFromCPUFiles(GOVERNORINFOFILE)
-        self.frequencies = self.readFromCPUFiles(FREQINFOFILE)
         self.freqdir = FREQDIR
         self.freqcurfile = FREQCURINFO
         self.freqsetfile = FREQSET
         self.governorsetfile = GOVERNORSET
+        self.governos = self.readFromCPUFiles(GOVERNORINFOFILE)
+        self.frequencies = self.readFromCPUFiles(FREQINFOFILE)
 
     def get_governos(self):
         """
