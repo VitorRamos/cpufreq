@@ -45,22 +45,30 @@ class CPUFreq:
 
     """
 
+    def __new__(cls, *args, **kwargs):
+        if not LINUX:
+            print("This module should be used only on Linux!")
+            return None
+        elif not (path.isfile(GOVERNORINFOFILE) and path.isfile(FREQINFOFILE)):
+            print("This module should be used with OS CPU Power driver "
+                  "(Linux ACPI module, for example) activated!")
+            return None
+        else:
+            return super(CPUFreq, cls).__new__(cls, *args, **kwargs)
+
     def __init__(self):
         """
         Initialize the class attributes.
 
         """
 
-        if LINUX:
-            self.basedir = BASEDIR
-            self.freqdir = FREQDIR
-            self.freqcurfile = FREQCURINFO
-            self.freqsetfile = FREQSET
-            self.governorsetfile = GOVERNORSET
-            self.governos = self.read_from_cpufiles(GOVERNORINFOFILE)
-            self.frequencies = self.read_from_cpufiles(FREQINFOFILE)
-        else:
-            print("This module should be used only on Linux!")
+        self.basedir = BASEDIR
+        self.freqdir = FREQDIR
+        self.freqcurfile = FREQCURINFO
+        self.freqsetfile = FREQSET
+        self.governorsetfile = GOVERNORSET
+        self.governos = self.read_from_cpufiles(GOVERNORINFOFILE)
+        self.frequencies = self.read_from_cpufiles(FREQINFOFILE)
 
     def get_governos(self):
         """
