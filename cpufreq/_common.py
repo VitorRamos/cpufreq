@@ -21,5 +21,11 @@ FREQCURINFO = "cpuinfo_cur_freq"
 FREQSET = "scaling_setspeed"
 GOVERNORSET = "scaling_governor"
 
-DRIVERFREQ = path.isfile(path.join(BASEDIR,"cpu0",GOVERNORINFOFILE)) \
-             and path.isfile(path.join(BASEDIR,"cpu0",FREQINFOFILE))
+DRIVERFREQ = path.isfile(path.join(BASEDIR,
+                                   "cpu0",
+                                   FREQDIR,
+                                   GOVERNORINFOFILE)) \
+             and path.isfile(path.join(BASEDIR,
+                                       "cpu0",
+                                       FREQDIR,
+                                       FREQINFOFILE))
