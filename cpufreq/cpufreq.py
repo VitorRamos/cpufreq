@@ -16,6 +16,7 @@ from ._common import FREQDIR
 from ._common import FREQCURINFO
 from ._common import FREQSET
 from ._common import GOVERNORSET
+from ._common import DRIVERFREQ
 
 
 class CPUFreq:
@@ -49,7 +50,7 @@ class CPUFreq:
         if not LINUX:
             print("This module should be used only on Linux!")
             return None
-        elif not (path.isfile(GOVERNORINFOFILE) and path.isfile(FREQINFOFILE)):
+        elif not DRIVERFREQ:
             print("This module should be used with OS CPU Power driver "
                   "(Linux ACPI module, for example) activated!")
             return None

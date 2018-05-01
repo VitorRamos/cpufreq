@@ -5,6 +5,7 @@
 """
 
 import sys
+from os import path
 
 # If Python version is 3
 PY3 = sys.version_info[0] == 3
@@ -19,3 +20,6 @@ FREQDIR = "cpufreq"
 FREQCURINFO = "cpuinfo_cur_freq"
 FREQSET = "scaling_setspeed"
 GOVERNORSET = "scaling_governor"
+
+DRIVERFREQ = path.isfile(path.join(BASEDIR,"cpu0",GOVERNORINFOFILE)) \
+             and path.isfile(path.join(BASEDIR,"cpu0",FREQINFOFILE))
