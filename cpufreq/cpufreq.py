@@ -19,6 +19,23 @@ from ._common import GOVERNORSET
 from ._common import DRIVERFREQ
 
 
+class CPUFreqBaseError(Exception):
+    """Base Exception raised for errors in the Class CPUFreq."""
+    pass
+
+
+class CPUFreqErrorInit(CPUFreqBaseError):
+    """Exception raised for errors at initializing of CPUFreq Class.
+
+    Attributes:
+        expression - input expression in which the error occurred
+        message - explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
+
+
 class CPUFreq:
     """
     Class that manage cpus frequencies
@@ -48,11 +65,13 @@ class CPUFreq:
 
     def __new__(cls, *args, **kwargs):
         if not LINUX:
-            print("This module should be used only on Linux!")
+            raise(CPUFreqErrorInit("ERROR: %s Class should be used only on "
+                                   "Linux Systems." % cls.__name__))
             return None
         elif not DRIVERFREQ:
-            print("This module should be used with OS CPU Power driver "
-                  "(Linux ACPI module, for example) activated!")
+            raise(CPUFreqErrorInit("ERROR: %s Class should be used only with "
+                                   "OS CPU Power driver activated (Linux ACPI "
+                                   "module, for example)." % cls.__name__))
             return None
         else:
             return super(CPUFreq, cls).__new__(cls, *args, **kwargs)
