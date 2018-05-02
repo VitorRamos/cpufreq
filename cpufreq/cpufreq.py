@@ -16,6 +16,24 @@ from ._common import FREQDIR
 from ._common import FREQCURINFO
 from ._common import FREQSET
 from ._common import GOVERNORSET
+from ._common import DRIVERFREQ
+
+
+class CPUFreqBaseError(Exception):
+    """Base Exception raised for errors in the Class CPUFreq."""
+    pass
+
+
+class CPUFreqErrorInit(CPUFreqBaseError):
+    """Exception raised for errors at initializing of CPUFreq Class.
+
+    Attributes:
+        expression - input expression in which the error occurred
+        message - explanation of the error
+    """
+
+    def __init__(self, message):
+        self.message = message
 
 
 class CPUFreq:
@@ -45,22 +63,32 @@ class CPUFreq:
 
     """
 
+    def __new__(cls, *args, **kwargs):
+        if not LINUX:
+            raise(CPUFreqErrorInit("ERROR: %s Class should be used only on "
+                                   "Linux Systems." % cls.__name__))
+            return None
+        elif not DRIVERFREQ:
+            raise(CPUFreqErrorInit("ERROR: %s Class should be used only with "
+                                   "OS CPU Power driver activated (Linux ACPI "
+                                   "module, for example)." % cls.__name__))
+            return None
+        else:
+            return super(CPUFreq, cls).__new__(cls, *args, **kwargs)
+
     def __init__(self):
         """
         Initialize the class attributes.
 
         """
 
-        if LINUX:
-            self.basedir = BASEDIR
-            self.freqdir = FREQDIR
-            self.freqcurfile = FREQCURINFO
-            self.freqsetfile = FREQSET
-            self.governorsetfile = GOVERNORSET
-            self.governos = self.read_from_cpufiles(GOVERNORINFOFILE)
-            self.frequencies = self.read_from_cpufiles(FREQINFOFILE)
-        else:
-            print("This module should be used only on Linux!")
+        self.basedir = BASEDIR
+        self.freqdir = FREQDIR
+        self.freqcurfile = FREQCURINFO
+        self.freqsetfile = FREQSET
+        self.governorsetfile = GOVERNORSET
+        self.governos = self.read_from_cpufiles(GOVERNORINFOFILE)
+        self.frequencies = self.read_from_cpufiles(FREQINFOFILE)
 
     def get_governos(self):
         """
