@@ -238,9 +238,10 @@ class CPUFreq:
         :param cpu: Specifc CPU to set the frequency info
         :return
         """
-
+	
+	freq= str(freq)
         if freq not in self.frequencies[0]['data']:
-            return
+            raise(CPUFreqErrorInit("ERROR: Frequency cannot be setted"))
         self.change_max_frequency(freq, cpu=cpu)
         if cpu == -1:
             self.write_on_cpufiles(self.freqsetfile, freq)
