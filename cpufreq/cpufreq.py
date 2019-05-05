@@ -1,32 +1,17 @@
 # -*- coding: utf-8 -*-
 """
     Module with CPUFreq class that manage the CPU frequency.
-
-
 """
-
-from os import listdir
 from os import path
-import re
-from ._common import LINUX
-from ._common import BASEDIR
-from ._common import GOVERNORINFOFILE
-from ._common import FREQINFOFILE
-from ._common import FREQDIR
-from ._common import FREQCURINFO
-from ._common import FREQSET
-from ._common import GOVERNORSET
-from ._common import DRIVERFREQ
+import sys
 
 
 class CPUFreqBaseError(Exception):
     """Base Exception raised for errors in the Class CPUFreq."""
     pass
 
-
 class CPUFreqErrorInit(CPUFreqBaseError):
     """Exception raised for errors at initializing of CPUFreq Class.
-
     Attributes:
         expression - input expression in which the error occurred
         message - explanation of the error
@@ -36,275 +21,239 @@ class CPUFreqErrorInit(CPUFreqBaseError):
         self.message = message
 
 
-class CPUFreq:
+class cpuFreq:
     """
     Class that manage cpus frequencies
-
-        Atrributes
-            basedir - Base directory to get/set cpus setups
-            governos - List of available governos
-            frequencies - List of available frequencies
-
         Methods
-            get_governos()
-            get_frequencies()
-            readFromCPUFiles()
-            writeOnCPUFiles()
-            get_current_frequencie()
-            list_governos()
-            list_frequencies()
-            lists_current_governos()
-            list_current_frequencies()
-            change_governo()
-            change_frequency()
-            change_max_frequency()
+            enable_all_cpu()
+            reset()
+            disable_hyperthread()
             disable_cpu()
             enable_cpu()
-
+            set_frequencies()
+            set_governors()
+            get_available_frequencies()
+            get_available_governors()
+            get_online_cpus()
+            get_governors()
+            get_frequencies()
     """
 
+    BASEDIR = "/sys/devices/system/cpu"
+
     def __new__(cls, *args, **kwargs):
+        LINUX = sys.platform.startswith("linux")
+        DRIVERFREQ = path.isfile(path.join(cpuFreq.BASEDIR,
+                                        "cpu0",
+                                        "cpufreq",
+                                        "scaling_driver"))
         if not LINUX:
             raise(CPUFreqErrorInit("ERROR: %s Class should be used only on "
-                                   "Linux Systems." % cls.__name__))
-            return None
+                                "Linux Systems." % cls.__name__))
         elif not DRIVERFREQ:
             raise(CPUFreqErrorInit("ERROR: %s Class should be used only with "
-                                   "OS CPU Power driver activated (Linux ACPI "
-                                   "module, for example)." % cls.__name__))
-            return None
+                                "OS CPU Power driver activated (Linux ACPI "
+                                "module, for example)." % cls.__name__))
         else:
-            return super(CPUFreq, cls).__new__(cls, *args, **kwargs)
+            return super(cpuFreq, cls).__new__(cls, *args, **kwargs)
+    
+    # private
+    def __read_cpu_file(self, fname):
+        fpath = path.join(cpuFreq.BASEDIR, fname)
+        with open(fpath, "rb") as f:
+            data = f.read().decode("utf-8")
+        return data
 
-    def __init__(self):
-        """
-        Initialize the class attributes.
+    def __write_cpu_file(self, fname, data):
+        fpath = path.join(cpuFreq.BASEDIR,fname)
+        with open(fpath, "wb") as f:
+            f.write(data)
 
-        """
+    def __get_cpu_variable(self, var):
+        data = {}
+        for cpu in self.__get_ranges("online"):
+            fpath = path.join("cpu%i"%cpu,"cpufreq",var)
+            data["cpu%i"%cpu] = self.__read_cpu_file(fpath).rstrip("\n").split()
+        return data
 
-        self.basedir = BASEDIR
-        self.freqdir = FREQDIR
-        self.freqcurfile = FREQCURINFO
-        self.freqsetfile = FREQSET
-        self.governorsetfile = GOVERNORSET
-        self.governos = self.read_from_cpufiles(GOVERNORINFOFILE)
-        self.frequencies = self.read_from_cpufiles(FREQINFOFILE)
+    def __get_ranges(self, fname):
+        str_range = self.__read_cpu_file(fname).strip("\n").strip()
+        l = []
+        if not str_range:
+            return l
+        for r in str_range.split(","):
+            mr = r.split("-")
+            if len(mr) == 2:
+                l += list(range(int(mr[0]),  int(mr[1])+1))
+            else:
+                l += [int(mr[0])]
+        return l
 
-    def get_governos(self):
-        """
-        Get the governos list.
+    # interfaces
+    def enable_all_cpu(self):
+        '''
+        Enable all offline cpus
+        '''
+        for cpu in self.__get_ranges("offline"):
+            fpath = path.join("cpu%i"%cpu,"online")
+            self.__write_cpu_file(fpath, b"1")
 
-        :return List of available governos
-        """
+    def reset(self, rg=None):
+        '''
+        Enable all offline cpus, and reset max and min frequencies files
 
-        return self.governos
+        rg: range or list of threads to reset
+        '''
+        if type(rg) == int:
+            rg= [rg]
+        to_reset= rg if rg else self.__get_ranges("present")
+        self.enable_cpu(to_reset)
+        for cpu in to_reset:
+            fpath = path.join("cpu%i"%cpu,"cpufreq","cpuinfo_max_freq")
+            max_freq = self.__read_cpu_file(fpath)
+            fpath = path.join("cpu%i"%cpu,"cpufreq","cpuinfo_min_freq")
+            min_freq = self.__read_cpu_file(fpath)
+
+            fpath = path.join("cpu%i"%cpu,"cpufreq","scaling_max_freq")
+            self.__write_cpu_file(fpath, max_freq.encode())
+            fpath = path.join("cpu%i"%cpu,"cpufreq","scaling_min_freq")
+            self.__write_cpu_file(fpath, min_freq.encode())
+
+    def disable_hyperthread(self):
+        '''
+        Disable all threads attached to the same core
+        '''
+        to_disable = []
+        online_cpus = self.__get_ranges("online")
+        for cpu in online_cpus:
+            fpath = path.join("cpu%i"%cpu,"topology","thread_siblings_list")
+            to_disable += self.__get_ranges(fpath)[1:]
+        to_disable = set(to_disable) & set(online_cpus)
+
+        for cpu in to_disable:
+            fpath = path.join("cpu%i"%cpu,"online")
+            self.__write_cpu_file(fpath, b"0")
+
+    def disable_cpu(self, rg):
+        '''
+        Disable cpus
+
+        rg: range or list of threads to disable
+        '''
+        if type(rg) == int:
+            rg= [rg]
+        to_disable= set(rg) & set(self.__get_ranges("online"))
+        for cpu in to_disable:
+            fpath = path.join("cpu%i"%cpu,"online")
+            self.__write_cpu_file(fpath, b"0")
+
+    def enable_cpu(self, rg):
+        '''
+        Enable cpus
+
+        rg: range or list of threads to enable
+        '''
+        if type(rg) == int:
+            rg= [rg]
+        to_disable= set(rg) & set(self.__get_ranges("offline"))
+        for cpu in to_disable:
+            fpath = path.join("cpu%i"%cpu,"online")
+            self.__write_cpu_file(fpath, b"1")
+
+    def set_frequencies(self, freq, rg=None, setMaxfeq=True, setMinfreq=True, setSpeed=True):
+        '''
+        Set cores frequencies
+
+        freq: int frequency in KHz
+        rg: list of range of cores
+        setMaxfeq: set the maximum frequency, default to true
+        setMinfreq: set the minimum frequency, default to true
+        setSpeed: only set the frequency, default to true
+        '''
+        to_change = self.__get_ranges("online")
+        if type(rg) == int:
+            rg= [rg]
+        if rg: to_change= set(rg) & set(self.__get_ranges("online"))
+        for cpu in to_change:
+            if setSpeed:
+                fpath = path.join("cpu%i"%cpu,"cpufreq","scaling_setspeed")
+                self.__write_cpu_file(fpath, str(freq).encode())
+            if setMinfreq:
+                fpath = path.join("cpu%i"%cpu,"cpufreq","scaling_min_freq")
+                self.__write_cpu_file(fpath, str(freq).encode())
+            if setMaxfeq:
+                fpath = path.join("cpu%i"%cpu,"cpufreq","scaling_max_freq")
+                self.__write_cpu_file(fpath, str(freq).encode())
+
+    def set_governors(self, gov, rg=None):
+        '''
+        Set governors
+
+        gov: str name of the governor
+        rg: list of range of cores
+        '''
+        to_change = self.__get_ranges("online")
+        if type(rg) == int:
+            rg= [rg]
+        if rg: to_change= set(rg) & set(self.__get_ranges("online"))
+        for cpu in to_change:
+            fpath = path.join("cpu%i"%cpu,"cpufreq","scaling_governor")
+            self.__write_cpu_file(fpath, gov.encode())
+
+    def get_available_frequencies(self):
+        '''
+        Get all possible frequencies
+        '''
+        fpath = path.join("cpu0","cpufreq","scaling_available_frequencies")
+        data = self.__read_cpu_file(fpath).rstrip("\n").split()
+        return data
+
+    def get_available_governors(self):
+        '''
+        Get all possible governors
+        '''
+        fpath = path.join("cpu0","cpufreq","scaling_available_governors")
+        data = self.__read_cpu_file(fpath).rstrip("\n").split()
+        return data
+
+    def get_online_cpus(self):
+        '''
+        Get current online cpus
+        '''
+        return self.__get_ranges("online")
+
+    def get_governors(self):
+        '''
+        Get current governors
+        '''
+        return self.__get_cpu_variable("scaling_governor")
 
     def get_frequencies(self):
-        """
-        Get the frequencies list.
+        '''
+        Get current frequency speed
+        '''
+        return self.__get_cpu_variable("scaling_cur_freq")
+    
+    def get_driver(self):
+        '''
+        Get current driver
+        '''
+        fpath = path.join("cpu0","cpufreq","scaling_driver")
+        data = self.__read_cpu_file(fpath).rstrip("\n").split()
+        return data
 
-        :return List of available frequencies
-        """
-
-        return self.frequencies
-
-    def read_from_cpufiles(self, filename):
-        """
-        Read the available governos from system cpu info file.
-
-        :param filename: File name to read from
-        :return List of dictionary with available cpus info
-        """
-
-        cpu = {'cpu': 0, 'data': 0}
-        cpus = []
-        for ldir in listdir(self.basedir):
-            if re.match('cpu[0-9]', ldir):
-                fp = path.join(self.basedir, ldir, self.freqdir, filename)
-                try:
-                    with open(fp) as f:
-                        data = [i for i in f.read().split()]
-                    cpu['cpu'] = int(ldir.strip('cpu'))
-                    cpu['data'] = data
-                    cpus.append(cpu.copy())
-                except IOError:
-                    print("Error: File %s does not appear to exist "
-                          "or permission error." % fp)
-        return cpus
-
-    def write_on_cpufiles(self, filename, data):
-        """
-        Write a data in a governo cpu file.
-
-        :param filename: File name to read from
-        :param data: data to write in filename file
-        """
-
-        for ldir in listdir(self.basedir):
-            if re.match('cpu[0-9]', ldir):
-                fp = path.join(self.basedir, ldir, self.freqdir, filename)
-                try:
-                    with open(fp, "w") as f:
-                        f.write(data)
-                except IOError:
-                    print("Error: File %s does not appear to exist "
-                          "or permission error." % fp)
-
-    def get_current_frequencies(self, cpu=-1):
-        """
-        Read the current frequency from system cpu info file.
-
-        :param cpu: Specifc CPU to get frequency info
-        :return List of dictionary with available cpus info
-        """
-
-        if cpu == -1:
-            return self.read_from_cpufiles(self.freqcurfile)
-        else:
-            fp = path.join(self.basedir, "cpu%d" % cpu,
-                           self.freqdir, self.freqcurfile)
-            with open(fp, "r") as f:
-                frs = f.read()
-            return frs
-
-    def list_governos(self):
-        """
-        Print the governos list.
-
-        :return
-        """
-
-        for cpu in self.governos:
-            print(cpu['cpu'], cpu['data'])
-
-    def list_frequencies(self):
-        """
-        Print the frequencies list.
-
-        :return
-        """
-
-        for cpu in self.frequencies:
-            print(cpu['cpu'], cpu['data'])
-
-    def list_current_governos(self):
-        """
-        Print the current governor.
-
-        :return
-        """
-
-        for cpu in self.read_from_cpufiles(self.governorsetfile):
-            print(cpu['cpu'], cpu['data'])
-
-    def list_current_frequencies(self):
-        """
-        Print the current frequency.
-
-        :return
-        """
-
-        for cpu in self.read_from_cpufiles(self.freqcurfile):
-            print(cpu['cpu'], cpu['data'])
-
-    def change_governo(self, name, cpu=-1):
-        """
-        Change the actual governor.
-
-        :param name: name of governor to set
-        :param cpu: Specifc CPU to set the governor info
-        :return
-        """
-
-        if name not in self.governos[0]['data']:
-            return
-        if cpu == -1:
-            self.write_on_cpufiles(self.governorsetfile, name)
-        else:
-            fp = path.join(self.basedir, "cpu%d" % cpu,
-                           self.freqdir, self.governorsetfile)
-            try:
-                with open(fp, "w") as f:
-                    f.write(name)
-            except IOError:
-                print("Error: File %s does not appear to exist "
-                      "or permission error." % fp)
-
-    def change_frequency(self, freq, cpu=-1):
-        """
-        Change the actual frequency.
-
-        :param freq: frequency value to set
-        :param cpu: Specifc CPU to set the frequency info
-        :return
-        """
-
-        if freq not in self.frequencies[0]['data']:
-            return
-        self.change_max_frequency(freq, cpu=cpu)
-        if cpu == -1:
-            self.write_on_cpufiles(self.freqsetfile, freq)
-        else:
-            fp = path.join(self.basedir, "cpu%d" % cpu,
-                           self.freqdir, self.freqsetfile)
-            try:
-                with open(fp, "w") as f:
-                    f.write(freq)
-            except IOError:
-                print("Error: File %s does not appear to exist "
-                      "or permission error." % fp)
-
-    def change_max_frequency(self, freq, cpu=-1):
-        """
-        Set the max frequency.
-
-        :param freq: frequency value to set
-        :param cpu: Specifc CPU to set the frequency info
-        :return
-        """
-
-        if cpu == -1:
-            self.write_on_cpufiles('scaling_max_freq', freq)
-        else:
-            fp = path.join(self.basedir, "cpu%d" % cpu,
-                           self.freqdir, "scaling_max_freq")
-            try:
-                with open(fp, "w") as f:
-                    f.write(freq)
-            except IOError:
-                print("Error: File %s does not appear to exist "
-                      "or permission error." % fp)
-
-    def disable_cpu(self, cpu):
-        """
-        Turn the CPU on.
-
-        :param cpu: Specifc CPU to turn on
-        :return
-        """
-
-        fp = path.join(self.basedir, "cpu%d" % cpu, "online")
-        try:
-            with open(fp, "r+") as f:
-                if '1' in f.read():
-                    f.write("0")
-        except IOError:
-            print("Error: File %s does not appear to exist "
-                  "or permission error." % fp)
-
-    def enable_cpu(self, cpu):
-        """
-        Turn the CPU off.
-
-        :param cpu: Specifc CPU to turn off
-        :return
-        """
-
-        fp = path.join(self.basedir, "cpu%d" % cpu, "online")
-        try:
-            with open(fp, "r+") as f:
-                if '0' in f.read():
-                    f.write("1")
-        except IOError:
-            print("Error: File %s does not appear to exist "
-                  "or permission error." % fp)
+    def get_max_freq(self):
+        '''
+        Get max frequency possible
+        '''
+        fpath = path.join("cpu0","cpufreq","cpuinfo_max_freq")
+        data = self.__read_cpu_file(fpath).rstrip("\n").split()
+        return data
+    
+    def get_min_freq(self):
+        '''
+        Get min frequency possible
+        '''
+        fpath = path.join("cpu0","cpufreq","cpuinfo_min_freq")
+        data = self.__read_cpu_file(fpath).rstrip("\n").split()
+        return data

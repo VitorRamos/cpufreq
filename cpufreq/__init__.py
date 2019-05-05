@@ -1,4 +1,1 @@
-import sys
-
-from . import _common
-from .cpufreq import CPUFreq, CPUFreqErrorInit
+from .cpufreq import cpuFreq
