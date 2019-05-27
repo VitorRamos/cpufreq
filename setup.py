@@ -23,5 +23,12 @@ setup(name='cpufreq',
           "License :: OSI Approved :: MIT License",
           "Programming Language :: Python :: 3",
       ],
+      entry_points={
+          'console_scripts': [
+              'cpufreq_info = cpufreq.run:main',
+              'cpufreq_governos = cpufreq.run:test1',
+              'cpufreq_frequencies = cpufreq.run:test2',
+          ],
+      },
       keywords='cpufreq tool',
       zip_safe=False)
