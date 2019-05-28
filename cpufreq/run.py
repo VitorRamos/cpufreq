@@ -30,8 +30,9 @@ def main():
         print("Status of CPUs:")
         govs = c.get_governors()
         freqs = c.get_frequencies()
+        print("CPU: {:2d} - {:>12} - {:>8}".format("CPU","Governor","Frequencie"))
         for c in govs["cpu"].keys():
-            print("CPU: {:2d} - {:>15} - {:>10}".format(c,govs["cpu"][c],freqs["cpu"][c]))
+            print("{:2d} - {:>12} - {:>8}".format(c,govs["cpu"][c],freqs["cpu"][c]))
     except CPUFreqErrorInit as err:
         print("{0}".format(err))
 
