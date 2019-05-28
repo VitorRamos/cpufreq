@@ -242,18 +242,33 @@ class cpuFreq:
         data = self.__read_cpu_file(fpath).rstrip("\n").split()[0]
         return data
 
-    def get_max_freq(self):
+    def get_max_freq(self, rg=None):
         '''
         Get max frequency possible
+
+        rg: list of range of cores
         '''
-        fpath = path.join("cpu0","cpufreq","cpuinfo_max_freq")
-        data = self.__read_cpu_file(fpath).rstrip("\n").split()[0]
+        to_load = self.__get_ranges("online")
+        if type(rg) == int:
+            rg= [rg]
+        if rg: to_load= set(rg) & set(self.__get_ranges("online"))
+        data = {"cpu": {}}
+        for cpu in to_load:
+            fpath = path.join("cpu%i"%cpu,"cpufreq","cpuinfo_max_freq")
+            data["cpu"][int(cpu)] = self.__read_cpu_file(fpath).rstrip("\n").split()[0]
         return data
     
     def get_min_freq(self):
         '''
         Get min frequency possible
+        rg: list of range of cores
         '''
-        fpath = path.join("cpu0","cpufreq","cpuinfo_min_freq")
-        data = self.__read_cpu_file(fpath).rstrip("\n").split()[0]
+        to_load = self.__get_ranges("online")
+        if type(rg) == int:
+            rg= [rg]
+        if rg: to_load= set(rg) & set(self.__get_ranges("online"))
+        data = {"cpu": {}}
+        for cpu in to_load:
+            fpath = path.join("cpu%i"%cpu,"cpufreq","cpuinfo_min_freq")
+            data["cpu"][int(cpu)] = self.__read_cpu_file(fpath).rstrip("\n").split()[0]
         return data
