@@ -48,12 +48,12 @@ class cpuFreq:
                                         "cpufreq",
                                         "scaling_driver"))
         if not LINUX:
-            raise(CPUFreqErrorInit("ERROR: %s Class should be used only on "
-                                "Linux Systems." % cls.__name__))
+            raise(CPUFreqErrorInit("ERROR: %s Class should be used only on " \
+            "Linux Systems." % cls.__name__))
         elif not DRIVERFREQ:
-            raise(CPUFreqErrorInit("ERROR: %s Class should be used only with "
-                                "OS CPU Power driver activated (Linux ACPI "
-                                "module, for example)." % cls.__name__))
+            raise(CPUFreqErrorInit("ERROR: %s Class should be used only with " \
+            "OS CPU Power driver activated (Linux ACPI " \
+            "module, for example)." % cls.__name__))
         else:
             return super(cpuFreq, cls).__new__(cls, *args, **kwargs)
     
@@ -70,10 +70,10 @@ class cpuFreq:
             f.write(data)
 
     def __get_cpu_variable(self, var):
-        data = {}
+        data = {"cpu": {}}
         for cpu in self.__get_ranges("online"):
             fpath = path.join("cpu%i"%cpu,"cpufreq",var)
-            data["cpu%i"%cpu] = self.__read_cpu_file(fpath).rstrip("\n").split()
+            data["cpu"][int(cpu)] = self.__read_cpu_file(fpath).rstrip("\n").split()[0]
         return data
 
     def __get_ranges(self, fname):
@@ -239,7 +239,7 @@ class cpuFreq:
         Get current driver
         '''
         fpath = path.join("cpu0","cpufreq","scaling_driver")
-        data = self.__read_cpu_file(fpath).rstrip("\n").split()
+        data = self.__read_cpu_file(fpath).rstrip("\n").split()[0]
         return data
 
     def get_max_freq(self):
@@ -247,7 +247,7 @@ class cpuFreq:
         Get max frequency possible
         '''
         fpath = path.join("cpu0","cpufreq","cpuinfo_max_freq")
-        data = self.__read_cpu_file(fpath).rstrip("\n").split()
+        data = self.__read_cpu_file(fpath).rstrip("\n").split()[0]
         return data
     
     def get_min_freq(self):
@@ -255,5 +255,5 @@ class cpuFreq:
         Get min frequency possible
         '''
         fpath = path.join("cpu0","cpufreq","cpuinfo_min_freq")
-        data = self.__read_cpu_file(fpath).rstrip("\n").split()
+        data = self.__read_cpu_file(fpath).rstrip("\n").split()[0]
         return data

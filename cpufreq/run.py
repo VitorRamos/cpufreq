@@ -21,7 +21,20 @@ def main():
     """
     Main function executed from console run.
     """
-    print("main")
+    try:
+        c = cpuFreq()
+        print("Informations about the System:")
+        print("Driver: {0}".format(c.get_driver()))
+        print("Available Governors: {0}".format(', '.join(c.get_available_governors())))
+        print("Available Frequencies: {0}".format(', '.join(c.get_available_frequencies())))
+        print("Status of CPUs:")
+        govs = c.get_governors()
+        freqs = c.get_frequencies()
+        for c in list(govs["cpu"].keys()).sort():
+            print("CPU: {:2d} - {:>15} - {:>10}".format(c,govs["cpu"][c],freqs["cpu"][c]))
+    except CPUFreqErrorInit as err:
+        print("{0}".format(err))
+
 
 if __name__ == '__main__':
     main()
