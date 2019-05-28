@@ -258,7 +258,7 @@ class cpuFreq:
             data["cpu"][int(cpu)] = self.__read_cpu_file(fpath).rstrip("\n").split()[0]
         return data
     
-    def get_min_freq(self):
+    def get_min_freq(self, rg=None):
         '''
         Get min frequency possible
         rg: list of range of cores
