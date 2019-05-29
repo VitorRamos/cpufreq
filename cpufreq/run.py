@@ -46,12 +46,10 @@ def argsparsevalidation():
     subparsers = parser.add_subparsers(help="Available commands")
 
     parse_info = subparsers.add_parser('info', 
-                                       help='print status of governors and frequencies', 
-                                       default=1)
+                                       help='print status of governors and frequencies')
 
     parse_reset = subparsers.add_parser('reset', 
-                                        help='reset the governors and max and min frequencies', 
-                                        default=1)
+                                        help='reset the governors and max and min frequencies')
 
     # parser.add_argument('c', type=argsparseintlist,
     #                     help='List of cores numbers to be '
