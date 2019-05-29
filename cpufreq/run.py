@@ -45,18 +45,15 @@ def argsparsevalidation():
                                                  'of cpus by command line')
     subparsers = parser.add_subparsers(help="Available commands")
 
-    info = subparsers.add_parser('info', 
-                                       help='Print status of governors and frequencies')
+    info = subparsers.add_parser('info', help='Print status of governors and frequencies')
 
-    reset = subparsers.add_parser('reset', 
-                                        help='Reset the governors and max and min frequencies')
+    reset = subparsers.add_parser('reset', help='Reset the governors and max and min frequencies')
 
-    setgovernor = subparsers.add_parser('setgovernor', 
-                                              help='Set the governor for all online cpus or '
-                                              'with optional specific cpus. Ex: cpufreq setgovernor "ondemand"')
+    setgovernor = subparsers.add_parser('setgovernor', help='Set the governor for all online cpus or '
+                                        'with optional specific cpus. Ex: cpufreq setgovernor "ondemand"')
     setgovernor.add_argument('--cpus', type=argsparseintlist,
-                                   help='List of CPUs numbers (first=0) to set gorvernor '
-                                   'Ex: 0,1,3,5')
+                             help='List of CPUs numbers (first=0) to set gorvernor '
+                                  'Ex: 0,1,3,5')
 
     # parser.add_argument('c', type=argsparseintlist,
     #                     help='List of cores numbers to be '
@@ -108,6 +105,7 @@ def main():
     Main function executed from console run.
     """
     args = argsparsevalidation()
+    print(args)
     
     try:
         c = cpuFreq()
