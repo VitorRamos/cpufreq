@@ -46,10 +46,17 @@ def argsparsevalidation():
     subparsers = parser.add_subparsers(help="Available commands")
 
     parse_info = subparsers.add_parser('info', 
-                                       help='print status of governors and frequencies')
+                                       help='Print status of governors and frequencies')
 
     parse_reset = subparsers.add_parser('reset', 
-                                        help='reset the governors and max and min frequencies')
+                                        help='Reset the governors and max and min frequencies')
+
+    parse_setgovernor = subparsers.add_parser('setgovernor', 
+                                              help='Set the governor for all online cpus or '
+                                              'with optional specific cpus. Ex: cpufreq setgovernor "ondemand"')
+    parse_setgovernor.add_argument('--cpus', type=argsparseintlist,
+                                   help='List of CPUs numbers (first=0) to set gorvernor '
+                                   'Ex: 0,1,3,5')
 
     # parser.add_argument('c', type=argsparseintlist,
     #                     help='List of cores numbers to be '
@@ -71,20 +78,18 @@ def argsparsevalidation():
     #                     help='If run with thread affinity(limiting the '
     #                          'running cores to defined number of cores), '
     #                          'define the cpu base number.')
-    parser.add_argument('info', 
-                        help='print status of governors and frequencies', default=1)
     args = parser.parse_args()
     return args
 
-def reset():
+def set_governors(c,governor, cpus=None):
     try:
         c = cpuFreq()
-        c.reset()
-        print("Governors, maximum and minimum frequencies reset successfully.")
+        c.set_governors(gov=governor, rg=cpus)
+        print("Governors set successfully.")
     except CPUFreqErrorInit as err:
         print("{0}".format(err))    
     
-def info():
+def info(c):
     try:
         c = cpuFreq()
         print("Informations about the System:")
@@ -108,12 +113,28 @@ def main():
     """
     args = argsparsevalidation()
     
-    print(args)
-    if args.info:
-        info()
-    elif args.reset:
-        reset()
+    try:
+        c = cpuFreq()
+    except CPUFreqErrorInit as err:
+        print("{0}".format(err))    
 
+    if args.info:
+        info(c)
+    elif args.reset:
+        c.reset()
+        print("Governors, maximum and minimum frequencies reset successfully.")
+    elif args.setgovernors:
+        print("cpu list: ", args.cpus)
+        avail_cpus = c.get_online_cpus() 
+        avail_governors = c.get_available_governors()
+        if not set(args.cpus).issubset(set(avail_cpus))
+            print("ERROR: cpu list has number(s) that not in permissible set list.")
+            exit(1)
+        elif governor not in avail_governors:
+            print("ERROR: governor name not not in permissible governors list.")
+            exit(1)
+        c.set_governors(gov=governor,rg=args.cpus)
+        print("Governor set successfully.")
 
 
 if __name__ == '__main__':
