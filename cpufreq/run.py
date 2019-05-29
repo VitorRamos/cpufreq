@@ -90,22 +90,18 @@ def set_governors(c,governor, cpus=None):
         print("{0}".format(err))    
     
 def info(c):
-    try:
-        c = cpuFreq()
-        print("Informations about the System:")
-        print("Driver: {0}".format(c.get_driver()))
-        print("Available Governors: {0}".format(', '.join(c.get_available_governors())))
-        print("Available Frequencies: {0}".format(', '.join(c.get_available_frequencies())))
-        print("Status of CPUs:")
-        govs = c.get_governors()
-        freqs = c.get_frequencies()
-        minfreq = c.get_min_freq()
-        maxfreq = c.get_max_freq()
-        print("{:^4} - {:^12} - {:^8} - {:^8} - {:^8}".format("CPU","Governor","Frequencie", "Min Freq.", "Max Freq."))
-        for c in govs["cpu"].keys():
-            print("{:4d} - {:>12} - {:>8} - {:>8} - {:>8}".format(c,govs["cpu"][c],freqs["cpu"][c],minfreq["cpu"][c],maxfreq["cpu"][c]))
-    except CPUFreqErrorInit as err:
-        print("{0}".format(err))    
+    print("Informations about the System:")
+    print("Driver: {0}".format(c.get_driver()))
+    print("Available Governors: {0}".format(', '.join(c.get_available_governors())))
+    print("Available Frequencies: {0}".format(', '.join(c.get_available_frequencies())))
+    print("Status of CPUs:")
+    govs = c.get_governors()
+    freqs = c.get_frequencies()
+    minfreq = c.get_min_freq()
+    maxfreq = c.get_max_freq()
+    print("{:^4} - {:^12} - {:^8} - {:^8} - {:^8}".format("CPU","Governor","Frequencie", "Min Freq.", "Max Freq."))
+    for c in govs["cpu"].keys():
+        print("{:4d} - {:>12} - {:>8} - {:>8} - {:>8}".format(c,govs["cpu"][c],freqs["cpu"][c],minfreq["cpu"][c],maxfreq["cpu"][c]))
 
 def main():
     """
@@ -127,13 +123,13 @@ def main():
         print("cpu list: ", args.cpus)
         avail_cpus = c.get_online_cpus() 
         avail_governors = c.get_available_governors()
-        if not set(args.cpus).issubset(set(avail_cpus))
+        if not set(args.cpus).issubset(set(avail_cpus)):
             print("ERROR: cpu list has number(s) that not in permissible set list.")
             exit(1)
-        elif governor not in avail_governors:
+        elif args.setgovernor not in avail_governors:
             print("ERROR: governor name not not in permissible governors list.")
             exit(1)
-        c.set_governors(gov=governor,rg=args.cpus)
+        c.set_governors(gov=args.setgovernor,rg=args.cpus)
         print("Governor set successfully.")
 
 
