@@ -45,13 +45,13 @@ def argsparsevalidation():
                                                  'of cpus by command line')
     subparsers = parser.add_subparsers(help="Available commands")
 
-    info = subparsers.add_parser('info', help='Print status of governors and frequencies')
+    parse_info = subparsers.add_parser('info', help='Print status of governors and frequencies')
 
-    reset = subparsers.add_parser('reset', help='Reset the governors and max and min frequencies')
+    parse_reset = subparsers.add_parser('reset', help='Reset the governors and max and min frequencies')
 
-    setgovernor = subparsers.add_parser('setgovernor', help='Set the governor for all online cpus or '
+    parse_setgovernor = subparsers.add_parser('setgovernor', help='Set the governor for all online cpus or '
                                         'with optional specific cpus. Ex: cpufreq setgovernor "ondemand"')
-    setgovernor.add_argument('--cpus', type=argsparseintlist,
+    parse_setgovernor.add_argument('--cpus', type=argsparseintlist,
                              help='List of CPUs numbers (first=0) to set gorvernor '
                                   'Ex: 0,1,3,5')
 
