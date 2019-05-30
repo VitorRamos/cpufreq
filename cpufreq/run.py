@@ -125,19 +125,17 @@ def main():
     elif args.reset is True:
         c.reset()
         print("Governors, maximum and minimum frequencies reset successfully.")
-    elif args.setgovernors:
-        print("cpu list: ", args.cpus)
-        avail_cpus = c.get_online_cpus() 
-        avail_governors = c.get_available_governors()
-        if not set(args.cpus).issubset(set(avail_cpus)):
-            print("ERROR: cpu list has number(s) that not in permissible set list.")
-            exit(1)
-        elif args.setgovernor not in avail_governors:
-            print("ERROR: governor name not not in permissible governors list.")
-            exit(1)
-        c.set_governors(gov=args.setgovernor,rg=args.cpus)
-        print("Governor set successfully.")
-
+    elif args.governor:
+        if args.all == True:
+            rg = None
+        else:
+            avail_cpus = c.get_online_cpus() 
+            if not set(args.cpus).issubset(set(avail_cpus)):
+                print("ERROR: cpu list has cpu number(s) that not in online cpus list.")
+                exit(1)
+            rg = args.cpus
+        c.set_governors(gov=args.setgovernor,rg=rg)
+        print("Governor set successfully to cpus.")
 
 if __name__ == '__main__':
     main()
