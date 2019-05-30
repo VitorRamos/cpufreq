@@ -125,7 +125,7 @@ def main():
     elif args.reset is True:
         c.reset()
         print("Governors, maximum and minimum frequencies reset successfully.")
-    elif args.governor:
+    elif hasattr(args, 'governor'):
         if args.all == True:
             rg = None
         else:
@@ -134,7 +134,7 @@ def main():
                 print("ERROR: cpu list has cpu number(s) that not in online cpus list.")
                 exit(1)
             rg = args.cpus
-        c.set_governors(gov=args.setgovernor,rg=rg)
+        c.set_governors(gov=args.governor,rg=rg)
         print("Governor set successfully to cpus.")
 
 if __name__ == '__main__':
