@@ -33,7 +33,7 @@ def argsparseintlist(txt):
     listarg = [int(i) for i in txt]
     return listarg
 
-def argsparsevalidation():
+def argsparsevalidation(avail_govs):
     """
     Validation of script arguments passed via console.
 
@@ -43,17 +43,23 @@ def argsparsevalidation():
     parser = argparse.ArgumentParser(description='Script to get and set '
                                                  'frequencies configurations'
                                                  'of cpus by command line')
+    p_group = parser.add_mutually_exclusive_group()
+    p_group.add_argument('--info', action='store_true',
+                                   help='Print status of governors and frequencies')
+    p_group.add_argument('--reset', action='store_true',
+                                    help='Reset the governors and max and min frequencies')
     subparsers = parser.add_subparsers(help="Available commands")
-
-    parse_info = subparsers.add_parser('info', help='Print status of governors and frequencies')
-
-    parse_reset = subparsers.add_parser('reset', help='Reset the governors and max and min frequencies')
 
     parse_setgovernor = subparsers.add_parser('setgovernor', help='Set the governor for all online cpus or '
                                         'with optional specific cpus. Ex: cpufreq setgovernor "ondemand"')
-    parse_setgovernor.add_argument('--cpus', type=argsparseintlist,
-                             help='List of CPUs numbers (first=0) to set gorvernor '
-                                  'Ex: 0,1,3,5')
+    parse_setgovernor.add_argument('governor', help='Choice the governor name to set'
+                                               choices=avail_govs)
+    p_setgovernor_group = parse_setgovernor.add_mutually_exclusive_group()
+    p_setgovernor_group.add_argument('--all', action='store_true',
+                                              help='Set the governor for all online cpus.')
+    p_setgovernor_group.add_argument('--cpus', type=argsparseintlist,
+                                               help='List of CPUs numbers (first=0) to set gorvernor '
+                                                    'Ex: 0,1,3,5')
 
     # parser.add_argument('c', type=argsparseintlist,
     #                     help='List of cores numbers to be '
@@ -103,18 +109,20 @@ def info(c):
 def main():
     """
     Main function executed from console run.
-    """
-    args = argsparsevalidation()
-    print(args)
-    
+    """    
     try:
         c = cpuFreq()
     except CPUFreqErrorInit as err:
         print("{0}".format(err))    
+        exit()
 
-    if args.info:
+    avail_govs = c.get_available_governors()
+
+    args = argsparsevalidation(avail_govs)
+
+    if args.info is True:
         info(c)
-    elif args.reset:
+    elif args.reset is True:
         c.reset()
         print("Governors, maximum and minimum frequencies reset successfully.")
     elif args.setgovernors:
