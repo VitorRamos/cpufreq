@@ -61,26 +61,16 @@ def argsparsevalidation(avail_govs):
                                                help='List of CPUs numbers (first=0) to set gorvernor '
                                                     'Ex: 0,1,3,5')
 
-    # parser.add_argument('c', type=argsparseintlist,
-    #                     help='List of cores numbers to be '
-    #                          'used. Ex: 1,2,4')
-    # parser.add_argument('-p', '--package', help='Package Name to run',
-    #                     required=True)
-    # parser.add_argument('-c', '--compiler',
-    #                     help='Compiler name to be used on run. '
-    #                          '(Default: %(default)s).',
-    #                     choices=compilerchoicebuilds, default='gcc-hooks')
-    # parser.add_argument('-f', '--frequency', type=argsparseintlist,
-    #                     help='List of frequencies (KHz). Ex: 2000000,2100000')
-    # parser.add_argument('-i', '--input', type=argsparseinputlist,
-    #                     help=helpinputtxt, default='native')
-    # parser.add_argument('-r', '--repetitions', type=int,
-    #                     help='Number of repetitions for a specific run. '
-    #                          '(Default: %(default)s)', default=1)
-    # parser.add_argument('-b', '--cpubase', type=int,
-    #                     help='If run with thread affinity(limiting the '
-    #                          'running cores to defined number of cores), '
-    #                          'define the cpu base number.')
+    parse_frequency = subparsers.add_parser('setfrequency', help='Set the frequency for all online cpus or '
+                                        'with optional specific cpus. Ex: cpufreq setfrequency 2100000')
+    parse_frequency.add_argument('frequency', help='Frequency value to set', type=int)
+    p_setfrequency_group = parse_setgovernor.add_mutually_exclusive_group()
+    p_setfrequency_group.add_argument('--all', action='store_true',
+                                              help='Set the frequency for all online cpus.')
+    p_setfrequency_group.add_argument('--cpus', type=argsparseintlist,
+                                               help='List of CPUs numbers (first=0) to set frequency '
+                                                    'Ex: 0,1,3,5')
+
     args = parser.parse_args()
     return args
 
@@ -95,8 +85,8 @@ def set_governors(c,governor, cpus=None):
 def info(c):
     print("Informations about the System:")
     print("Driver: {0}".format(c.get_driver()))
-    print("Available Governors: {0}".format(', '.join(c.get_available_governors())))
-    print("Available Frequencies: {0}".format(', '.join(c.get_available_frequencies())))
+    print("Available Governors: {0}".format(', '.join(c.available_governors)))
+    print("Available Frequencies: {0}".format(', '.join(c.available_frequencies)))
     print("Status of CPUs:")
     govs = c.get_governors()
     freqs = c.get_frequencies()
@@ -116,9 +106,7 @@ def main():
         print("{0}".format(err))    
         exit()
 
-    avail_govs = c.get_available_governors()
-
-    args = argsparsevalidation(avail_govs)
+    args = argsparsevalidation(c.available_governors)
 
     if args.info is True:
         info(c)

@@ -25,9 +25,7 @@ setup(name='cpufreq',
       ],
       entry_points={
           'console_scripts': [
-              'cpufreq_info = cpufreq.run:main',
-              'cpufreq_governos = cpufreq.run:test1',
-              'cpufreq_frequencies = cpufreq.run:test2',
+              'cpufreq = cpufreq.run:main',
           ],
       },
       keywords='cpufreq tool',
