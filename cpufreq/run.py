@@ -124,6 +124,17 @@ def main():
             rg = args.cpus
         c.set_governors(gov=args.governor,rg=rg)
         print("Governor set successfully to cpus.")
+    elif hasattr(args, 'frequency'):
+        if args.all == True:
+            rg = None
+        else:
+            avail_cpus = c.get_online_cpus() 
+            if not set(args.cpus).issubset(set(avail_cpus)):
+                print("ERROR: cpu list has cpu number(s) that not in online cpus list.")
+                exit(1)
+            rg = args.cpus
+        c.set_frequencies(freq=args.frequency,rg=rg)
+        print("Frequency set successfully to cpus.")
 
 if __name__ == '__main__':
     main()
