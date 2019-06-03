@@ -86,7 +86,7 @@ def info(c):
     print("Informations about the System:")
     print("Driver: {}".format(c.driver))
     print("Available Governors: {}".format(', '.join(c.available_governors)))
-    print("Available Frequencies: {:d}".format(', '.join(c.available_frequencies)))
+    print("Available Frequencies: {}".format(', '.join(str(i) from i in c.available_frequencies)))
     print("Status of CPUs:")
     govs = c.get_governors()
     freqs = c.get_frequencies()
