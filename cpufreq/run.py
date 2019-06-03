@@ -61,12 +61,12 @@ def argsparsevalidation(avail_govs):
                                                help='List of CPUs numbers (first=0) to set gorvernor '
                                                     'Ex: 0,1,3,5')
 
-    parse_frequency = subparsers.add_parser('setfrequency', help='Set the frequency for all online cpus or '
+    parse_setfrequency = subparsers.add_parser('setfrequency', help='Set the frequency for all online cpus or '
                                         'with optional specific cpus. Ex: cpufreq setfrequency 2100000')
-    parse_frequency.add_argument('frequency', help='Frequency value to set', type=int)
-    p_setfrequency_group = parse_setgovernor.add_mutually_exclusive_group()
+    parse_setfrequency.add_argument('frequency', help='Frequency value to set', type=int)
+    p_setfrequency_group = parse_setfrequency.add_mutually_exclusive_group()
     p_setfrequency_group.add_argument('--all', action='store_true',
-                                              help='Set the frequency for all online cpus.')
+                                            help='Set the frequency for all online cpus.')
     p_setfrequency_group.add_argument('--cpus', type=argsparseintlist,
                                                help='List of CPUs numbers (first=0) to set frequency '
                                                     'Ex: 0,1,3,5')
