@@ -80,13 +80,13 @@ def set_governors(c,governor, cpus=None):
         c.set_governors(gov=governor, rg=cpus)
         print("Governors set successfully.")
     except CPUFreqErrorInit as err:
-        print("{0}".format(err))    
+        print("{}".format(err))    
     
 def info(c):
     print("Informations about the System:")
-    print("Driver: {0}".format(c.driver))
-    print("Available Governors: {0}".format(', '.join(c.available_governors)))
-    print("Available Frequencies: {0}".format(', '.join(c.available_frequencies)))
+    print("Driver: {}".format(c.driver))
+    print("Available Governors: {}".format(', '.join(c.available_governors)))
+    print("Available Frequencies: {}".format(', '.join(c.available_frequencies)))
     print("Status of CPUs:")
     govs = c.get_governors()
     freqs = c.get_frequencies()
@@ -103,7 +103,7 @@ def main():
     try:
         c = cpuFreq()
     except CPUFreqErrorInit as err:
-        print("{0}".format(err))    
+        print("{}".format(err))    
         exit()
 
     args = argsparsevalidation(c.available_governors)
