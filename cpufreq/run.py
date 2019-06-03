@@ -125,6 +125,10 @@ def main():
         c.set_governors(gov=args.governor,rg=rg)
         print("Governor set successfully to cpus.")
     elif hasattr(args, 'frequency'):
+        if not args.frequency in c.available_frequencies:
+            print("ERROR: frequency should be a value in list availabe frequencies: ")
+            print("   ",c.available_frequencies)
+            exit(1)
         if args.all == True:
             rg = None
         else:
