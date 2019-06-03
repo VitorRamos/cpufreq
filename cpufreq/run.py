@@ -84,7 +84,7 @@ def set_governors(c,governor, cpus=None):
     
 def info(c):
     print("Informations about the System:")
-    print("Driver: {0}".format(c.get_driver()))
+    print("Driver: {0}".format(c.driver))
     print("Available Governors: {0}".format(', '.join(c.available_governors)))
     print("Available Frequencies: {0}".format(', '.join(c.available_frequencies)))
     print("Status of CPUs:")
