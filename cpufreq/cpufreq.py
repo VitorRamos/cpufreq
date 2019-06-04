@@ -192,6 +192,10 @@ class cpuFreq:
                     "interval: %s - %s." % (min(self.available_frequencies),max(self.available_frequencies))))
             fpath = path.join("cpu%i"%cpu,"cpufreq","scaling_setspeed")
             self.__write_cpu_file(fpath, str(freq).encode())
+            fminpath = path.join("cpu%i"%cpu,"cpufreq","scaling_min_freq")
+            self.__write_cpu_file(fminpath, str(min(self.available_frequencies)).encode())
+            fmaxpath = path.join("cpu%i"%cpu,"cpufreq","scaling_max_freq")
+            self.__write_cpu_file(fmaxpath, str(max(self.available_frequencies)).encode())
 
     def set_governors(self, gov, rg=None):
         '''
