@@ -24,5 +24,19 @@ Python module to control the frequency on Linux systems.
 
 ## Usage
 
- Use the example file script: cpufreq_example.py
+ # In a command line:
+
+```
+  # Listing the governors and frequencies of cpus
+     cpufreq --info
+  # Setting a governor for specifics CPU
+     cpufreq setgovernor powersave --cpus 0,1,2
+  # Resetting cpus and frequencies status
+     cpufreq --reset
+  # Help 
+     cpufreq --help
+```
+
+ # In a python script:
+ Use the example file script: example.py
 

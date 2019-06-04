@@ -24,6 +24,10 @@ class CPUFreqErrorInit(CPUFreqBaseError):
 class cpuFreq:
     """
     Class that manage cpus frequencies
+        Attributes
+            driver
+            available_governors
+            available_frequencies
         Methods
             enable_all_cpu()
             reset()
@@ -32,8 +36,6 @@ class cpuFreq:
             enable_cpu()
             set_frequencies()
             set_governors()
-            get_available_frequencies()
-            get_available_governors()
             get_online_cpus()
             get_governors()
             get_frequencies()
@@ -48,15 +50,29 @@ class cpuFreq:
                                         "cpufreq",
                                         "scaling_driver"))
         if not LINUX:
-            raise(CPUFreqErrorInit("ERROR: %s Class should be used only on "
-                                "Linux Systems." % cls.__name__))
+            raise(CPUFreqErrorInit("ERROR: %s Class should be used only on " \
+            "Linux Systems." % cls.__name__))
         elif not DRIVERFREQ:
-            raise(CPUFreqErrorInit("ERROR: %s Class should be used only with "
-                                "OS CPU Power driver activated (Linux ACPI "
-                                "module, for example)." % cls.__name__))
+            raise(CPUFreqErrorInit("ERROR: %s Class should be used only with " \
+            "OS CPU Power driver activated (Linux ACPI " \
+            "module, for example)." % cls.__name__))
         else:
             return super(cpuFreq, cls).__new__(cls, *args, **kwargs)
-    
+
+    def __init__(self):
+        fpath = path.join("cpu0","cpufreq","scaling_driver")
+        datad = self.__read_cpu_file(fpath).rstrip("\n").split()[0]
+
+        fpath = path.join("cpu0","cpufreq","scaling_available_governors")
+        datag = self.__read_cpu_file(fpath).rstrip("\n").split()
+
+        fpath = path.join("cpu0","cpufreq","scaling_available_frequencies")
+        dataf = self.__read_cpu_file(fpath).rstrip("\n").split()
+
+        self.driver = datad
+        self.available_governors = datag
+        self.available_frequencies = [int(f) for f in dataf]
+
     # private
     def __read_cpu_file(self, fname):
         fpath = path.join(cpuFreq.BASEDIR, fname)
@@ -73,7 +89,7 @@ class cpuFreq:
         data = {}
         for cpu in self.__get_ranges("online"):
             fpath = path.join("cpu%i"%cpu,"cpufreq",var)
-            data["cpu%i"%cpu] = self.__read_cpu_file(fpath).rstrip("\n").split()
+            data[int(cpu)] = self.__read_cpu_file(fpath).rstrip("\n").split()[0]
         return data
 
     def __get_ranges(self, fname):
@@ -109,15 +125,11 @@ class cpuFreq:
         to_reset= rg if rg else self.__get_ranges("present")
         self.enable_cpu(to_reset)
         for cpu in to_reset:
-            fpath = path.join("cpu%i"%cpu,"cpufreq","cpuinfo_max_freq")
-            max_freq = self.__read_cpu_file(fpath)
-            fpath = path.join("cpu%i"%cpu,"cpufreq","cpuinfo_min_freq")
-            min_freq = self.__read_cpu_file(fpath)
-
+            self.set_governors("ondemand", rg=cpu)
             fpath = path.join("cpu%i"%cpu,"cpufreq","scaling_max_freq")
-            self.__write_cpu_file(fpath, max_freq.encode())
+            self.__write_cpu_file(fpath, str(max(self.available_frequencies)).encode())
             fpath = path.join("cpu%i"%cpu,"cpufreq","scaling_min_freq")
-            self.__write_cpu_file(fpath, min_freq.encode())
+            self.__write_cpu_file(fpath, str(max(self.available_frequencies)).encode())
 
     def disable_hyperthread(self):
         '''
@@ -160,30 +172,30 @@ class cpuFreq:
             fpath = path.join("cpu%i"%cpu,"online")
             self.__write_cpu_file(fpath, b"1")
 
-    def set_frequencies(self, freq, rg=None, setMaxfeq=True, setMinfreq=True, setSpeed=True):
+    def set_frequencies(self, freq, rg=None):
         '''
         Set cores frequencies
 
         freq: int frequency in KHz
         rg: list of range of cores
-        setMaxfeq: set the maximum frequency, default to true
-        setMinfreq: set the minimum frequency, default to true
-        setSpeed: only set the frequency, default to true
         '''
+
+        if not type(freq) is int:
+            raise(CPUFreqErrorInit("ERROR: Frequency should be a Integer value"))
         to_change = self.__get_ranges("online")
         if type(rg) == int:
             rg= [rg]
         if rg: to_change= set(rg) & set(self.__get_ranges("online"))
         for cpu in to_change:
-            if setSpeed:
-                fpath = path.join("cpu%i"%cpu,"cpufreq","scaling_setspeed")
-                self.__write_cpu_file(fpath, str(freq).encode())
-            if setMinfreq:
-                fpath = path.join("cpu%i"%cpu,"cpufreq","scaling_min_freq")
-                self.__write_cpu_file(fpath, str(freq).encode())
-            if setMaxfeq:
-                fpath = path.join("cpu%i"%cpu,"cpufreq","scaling_max_freq")
-                self.__write_cpu_file(fpath, str(freq).encode())
+            if freq < min(self.available_frequencies) or freq > max(self.available_frequencies):
+                raise(CPUFreqErrorInit("ERROR: Frequency should be between min and max frequencies " \
+                    "interval: %s - %s." % (min(self.available_frequencies),max(self.available_frequencies))))
+            fpath = path.join("cpu%i"%cpu,"cpufreq","scaling_setspeed")
+            self.__write_cpu_file(fpath, str(freq).encode())
+            fminpath = path.join("cpu%i"%cpu,"cpufreq","scaling_min_freq")
+            self.__write_cpu_file(fminpath, str(min(self.available_frequencies)).encode())
+            fmaxpath = path.join("cpu%i"%cpu,"cpufreq","scaling_max_freq")
+            self.__write_cpu_file(fmaxpath, str(max(self.available_frequencies)).encode())
 
     def set_governors(self, gov, rg=None):
         '''
@@ -199,22 +211,6 @@ class cpuFreq:
         for cpu in to_change:
             fpath = path.join("cpu%i"%cpu,"cpufreq","scaling_governor")
             self.__write_cpu_file(fpath, gov.encode())
-
-    def get_available_frequencies(self):
-        '''
-        Get all possible frequencies
-        '''
-        fpath = path.join("cpu0","cpufreq","scaling_available_frequencies")
-        data = self.__read_cpu_file(fpath).rstrip("\n").split()
-        return data
-
-    def get_available_governors(self):
-        '''
-        Get all possible governors
-        '''
-        fpath = path.join("cpu0","cpufreq","scaling_available_governors")
-        data = self.__read_cpu_file(fpath).rstrip("\n").split()
-        return data
 
     def get_online_cpus(self):
         '''
@@ -232,28 +228,38 @@ class cpuFreq:
         '''
         Get current frequency speed
         '''
-        return self.__get_cpu_variable("scaling_cur_freq")
+        freqs = self.__get_cpu_variable("scaling_cur_freq")
+        for i in freqs:
+            freqs[i] = int(freqs[i])
+        return freqs
     
-    def get_driver(self):
-        '''
-        Get current driver
-        '''
-        fpath = path.join("cpu0","cpufreq","scaling_driver")
-        data = self.__read_cpu_file(fpath).rstrip("\n").split()
-        return data
-
-    def get_max_freq(self):
+    def get_max_freq(self, rg=None):
         '''
         Get max frequency possible
+
+        rg: list of range of cores
         '''
-        fpath = path.join("cpu0","cpufreq","cpuinfo_max_freq")
-        data = self.__read_cpu_file(fpath).rstrip("\n").split()
+        to_load = self.__get_ranges("online")
+        if type(rg) == int:
+            rg= [rg]
+        if rg: to_load= set(rg) & set(self.__get_ranges("online"))
+        data = {}
+        for cpu in to_load:
+            fpath = path.join("cpu%i"%cpu,"cpufreq","cpuinfo_max_freq")
+            data[int(cpu)] = int(self.__read_cpu_file(fpath).rstrip("\n").split()[0])
         return data
     
-    def get_min_freq(self):
+    def get_min_freq(self, rg=None):
         '''
         Get min frequency possible
+        rg: list of range of cores
         '''
-        fpath = path.join("cpu0","cpufreq","cpuinfo_min_freq")
-        data = self.__read_cpu_file(fpath).rstrip("\n").split()
+        to_load = self.__get_ranges("online")
+        if type(rg) == int:
+            rg= [rg]
+        if rg: to_load= set(rg) & set(self.__get_ranges("online"))
+        data = {}
+        for cpu in to_load:
+            fpath = path.join("cpu%i"%cpu,"cpufreq","cpuinfo_min_freq")
+            data[int(cpu)] = int(self.__read_cpu_file(fpath).rstrip("\n").split()[0])
         return data
