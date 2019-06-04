@@ -86,10 +86,10 @@ class cpuFreq:
             f.write(data)
 
     def __get_cpu_variable(self, var):
-        data = {"cpu": {}}
+        data = {}
         for cpu in self.__get_ranges("online"):
             fpath = path.join("cpu%i"%cpu,"cpufreq",var)
-            data["cpu"][int(cpu)] = self.__read_cpu_file(fpath).rstrip("\n").split()[0]
+            data[int(cpu)] = self.__read_cpu_file(fpath).rstrip("\n").split()[0]
         return data
 
     def __get_ranges(self, fname):
@@ -228,7 +228,10 @@ class cpuFreq:
         '''
         Get current frequency speed
         '''
-        return self.__get_cpu_variable("scaling_cur_freq")
+        freqs = self.__get_cpu_variable("scaling_cur_freq")
+        for i in freqs:
+            freqs[i] = int(freqs[i])
+        return freqs
     
     def get_max_freq(self, rg=None):
         '''
@@ -240,10 +243,10 @@ class cpuFreq:
         if type(rg) == int:
             rg= [rg]
         if rg: to_load= set(rg) & set(self.__get_ranges("online"))
-        data = {"cpu": {}}
+        data = {}
         for cpu in to_load:
             fpath = path.join("cpu%i"%cpu,"cpufreq","cpuinfo_max_freq")
-            data["cpu"][int(cpu)] = self.__read_cpu_file(fpath).rstrip("\n").split()[0]
+            data[int(cpu)] = int(self.__read_cpu_file(fpath).rstrip("\n").split()[0])
         return data
     
     def get_min_freq(self, rg=None):
@@ -255,8 +258,8 @@ class cpuFreq:
         if type(rg) == int:
             rg= [rg]
         if rg: to_load= set(rg) & set(self.__get_ranges("online"))
-        data = {"cpu": {}}
+        data = {}
         for cpu in to_load:
             fpath = path.join("cpu%i"%cpu,"cpufreq","cpuinfo_min_freq")
-            data["cpu"][int(cpu)] = self.__read_cpu_file(fpath).rstrip("\n").split()[0]
+            data[int(cpu)] = int(self.__read_cpu_file(fpath).rstrip("\n").split()[0])
         return data

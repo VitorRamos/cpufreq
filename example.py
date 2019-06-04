@@ -15,7 +15,7 @@ print(govs)
 online_cpus= cpu.get_online_cpus()
 print(online_cpus)
 
-available_govs= cpu.get_available_governors()
+available_govs= cpu.available_governors
 print(available_govs)
 
 cpu.set_governors("powersave")
@@ -30,14 +30,12 @@ cpu.set_governors("userspace")
 govs= cpu.get_governors()
 print(govs)
 
-available_freqs= cpu.get_available_frequencies()
+available_freqs= cpu.available_frequencies
 for f in available_freqs:
     cpu.set_frequencies(f)
     mfreq= []
     for _ in range(10):
         freqs= cpu.get_frequencies()
-        for s in freqs:
-            freqs[s]= int(freqs[s][0])
         mfreq.append(Counter(freqs))
         time.sleep(0.1)
     print(sum(mfreq,Counter()))
