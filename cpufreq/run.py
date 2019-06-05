@@ -51,7 +51,7 @@ def argsparsevalidation(avail_govs):
     subparsers = parser.add_subparsers(help="Available commands")
 
     parse_setgovernor = subparsers.add_parser("setgovernor", help="Set the governor for all online cpus or "
-                                        "with optional specific cpus. Ex: cpufreq setgovernor "ondemand"")
+                                        "with optional specific cpus. Ex: cpufreq setgovernor \"ondemand\"")
     parse_setgovernor.add_argument("governor", help="Choice the governor name to set",
                                                choices=avail_govs)
     p_setgovernor_group = parse_setgovernor.add_mutually_exclusive_group()
