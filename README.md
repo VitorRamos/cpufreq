@@ -1,5 +1,7 @@
 # cpufreq
 
+[![Build Status](https://travis-ci.com/VitorRamos/cpufreq.svg?branch=master)](https://travis-ci.com/VitorRamos/cpufreq)
+
 Python module to control the frequency on Linux systems.
 
 ## Features
@@ -24,7 +26,7 @@ Python module to control the frequency on Linux systems.
 
 ## Usage
 
- # In a command line:
+ ### In a command line:
 
 ```
   # Listing the governors and frequencies of cpus
@@ -37,6 +39,6 @@ Python module to control the frequency on Linux systems.
      cpufreq --help
 ```
 
- # In a python script:
+ #### In a python script:
  Use the example file script: example.py
 
