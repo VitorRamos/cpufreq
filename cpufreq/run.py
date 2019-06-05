@@ -92,9 +92,9 @@ def info(c):
     freqs = c.get_frequencies()
     minfreq = c.get_min_freq()
     maxfreq = c.get_max_freq()
-    print("{:^4} - {:^12} - {:^8} - {:^8} - {:^8}".format("CPU","Governor","Frequencie", "Min Freq.", "Max Freq."))
+    print("{:^4} - {:^12} - {:^10} - {:^9} - {:^9}".format("CPU","Governor","Frequencie", "Min Freq.", "Max Freq."))
     for c in govs.keys():
-        print("{:4d} - {:>12} - {:8d} - {:8d} - {:8d}".format(c,govs[c],freqs[c],minfreq[c],maxfreq[c]))
+        print("{:4d} - {:>12} - {:10d} - {:9d} - {:9d}".format(c,govs[c],freqs[c],minfreq[c],maxfreq[c]))
 
 def main():
     """
