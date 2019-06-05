@@ -5,11 +5,11 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(name='cpufreq',
-      version='0.3.0',
+      version='0.3.1',
       description='CPU Frequency manage tool',
       url='https://github.com/VitorRamos/cpufreq',
-      author='Vitor Ramos',
-      author_email='ramos.vitor89@gmail.com',
+      author='Vitor Ramos, Alex Furtunato',
+      author_email='ramos.vitor89@gmail.com, alex.furtunato@academico.ifrn.edu.br',
       license='MIT',
       packages=['cpufreq'],
       install_requires=[
