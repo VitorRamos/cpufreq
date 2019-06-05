@@ -8,5 +8,6 @@ python:
 install:
   - python setup.py install
 
-# script:
+script:
+  - cpufreq --help
 #   - python tests/run.py
