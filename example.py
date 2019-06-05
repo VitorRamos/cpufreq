@@ -38,7 +38,7 @@ for f in available_freqs:
         freqs= cpu.get_frequencies()
         mfreq.append(Counter(freqs))
         time.sleep(0.1)
-    print(sum(mfreq,Counter()))
+    print(f, sum(mfreq,Counter()))
     
 cpu.disable_cpu(2)
 print(cpu.get_online_cpus())
