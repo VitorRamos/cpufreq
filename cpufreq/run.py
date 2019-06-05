@@ -17,7 +17,7 @@ def argsparselist(txt):
     :return: list of strings.
     """
 
-    txt = txt.split(',')
+    txt = txt.split(",")
     listarg = [i.strip() for i in txt]
     return listarg
 
@@ -29,7 +29,7 @@ def argsparseintlist(txt):
     :return: list of integer converted numbers.
     """
 
-    txt = txt.split(',')
+    txt = txt.split(",")
     listarg = [int(i) for i in txt]
     return listarg
 
@@ -40,36 +40,36 @@ def argsparsevalidation(avail_govs):
     :return: argparse object with validated arguments.
     """
 
-    parser = argparse.ArgumentParser(description='Script to get and set '
-                                                 'frequencies configurations'
-                                                 'of cpus by command line')
+    parser = argparse.ArgumentParser(description="Script to get and set "
+                                                 "frequencies configurations"
+                                                 "of cpus by command line")
     p_group = parser.add_mutually_exclusive_group()
-    p_group.add_argument('--info', action='store_true',
-                                   help='Print status of governors and frequencies')
-    p_group.add_argument('--reset', action='store_true',
-                                    help='Reset the governors and max and min frequencies')
+    p_group.add_argument("--info", action="store_true",
+                                   help="Print status of governors and frequencies")
+    p_group.add_argument("--reset", action="store_true",
+                                    help="Reset the governors and max and min frequencies")
     subparsers = parser.add_subparsers(help="Available commands")
 
-    parse_setgovernor = subparsers.add_parser('setgovernor', help='Set the governor for all online cpus or '
-                                        'with optional specific cpus. Ex: cpufreq setgovernor "ondemand"')
-    parse_setgovernor.add_argument('governor', help='Choice the governor name to set',
+    parse_setgovernor = subparsers.add_parser("setgovernor", help="Set the governor for all online cpus or "
+                                        "with optional specific cpus. Ex: cpufreq setgovernor "ondemand"")
+    parse_setgovernor.add_argument("governor", help="Choice the governor name to set",
                                                choices=avail_govs)
     p_setgovernor_group = parse_setgovernor.add_mutually_exclusive_group()
-    p_setgovernor_group.add_argument('--all', action='store_true',
-                                              help='Set the governor for all online cpus.')
-    p_setgovernor_group.add_argument('--cpus', type=argsparseintlist,
-                                               help='List of CPUs numbers (first=0) to set gorvernor '
-                                                    'Ex: 0,1,3,5')
+    p_setgovernor_group.add_argument("--all", action="store_true",
+                                              help="Set the governor for all online cpus.")
+    p_setgovernor_group.add_argument("--cpus", type=argsparseintlist,
+                                               help="List of CPUs numbers (first=0) to set gorvernor "
+                                                    "Ex: 0,1,3,5")
 
-    parse_setfrequency = subparsers.add_parser('setfrequency', help='Set the frequency for all online cpus or '
-                                        'with optional specific cpus. Ex: cpufreq setfrequency 2100000')
-    parse_setfrequency.add_argument('frequency', help='Frequency value to set', type=int)
+    parse_setfrequency = subparsers.add_parser("setfrequency", help="Set the frequency for all online cpus or "
+                                        "with optional specific cpus. Ex: cpufreq setfrequency 2100000")
+    parse_setfrequency.add_argument("frequency", help="Frequency value to set", type=int)
     p_setfrequency_group = parse_setfrequency.add_mutually_exclusive_group()
-    p_setfrequency_group.add_argument('--all', action='store_true',
-                                            help='Set the frequency for all online cpus.')
-    p_setfrequency_group.add_argument('--cpus', type=argsparseintlist,
-                                               help='List of CPUs numbers (first=0) to set frequency '
-                                                    'Ex: 0,1,3,5')
+    p_setfrequency_group.add_argument("--all", action="store_true",
+                                            help="Set the frequency for all online cpus.")
+    p_setfrequency_group.add_argument("--cpus", type=argsparseintlist,
+                                               help="List of CPUs numbers (first=0) to set frequency "
+                                                    "Ex: 0,1,3,5")
 
     args = parser.parse_args()
     return args
@@ -85,8 +85,8 @@ def set_governors(c,governor, cpus=None):
 def info(c):
     print("Informations about the System:")
     print("Driver: {}".format(c.driver))
-    print("Available Governors: {}".format(', '.join(c.available_governors)))
-    print("Available Frequencies: {}".format(', '.join(str(i) for i in c.available_frequencies)))
+    print("Available Governors: {}".format(", ".join(c.available_governors)))
+    print("Available Frequencies: {}".format(", ".join(str(i) for i in c.available_frequencies)))
     print("Status of CPUs:")
     govs = c.get_governors()
     freqs = c.get_frequencies()
@@ -113,7 +113,7 @@ def main():
     elif args.reset is True:
         c.reset()
         print("Governors, maximum and minimum frequencies reset successfully.")
-    elif hasattr(args, 'governor'):
+    elif hasattr(args, "governor"):
         if args.all == True:
             rg = None
         else:
@@ -124,7 +124,7 @@ def main():
             rg = args.cpus
         c.set_governors(gov=args.governor,rg=rg)
         print("Governor set successfully to cpus.")
-    elif hasattr(args, 'frequency'):
+    elif hasattr(args, "frequency"):
         if not args.frequency in c.available_frequencies:
             print("ERROR: frequency should be a value in list availabe frequencies: ")
             print("   ",c.available_frequencies)
@@ -140,5 +140,5 @@ def main():
         c.set_frequencies(freq=args.frequency,rg=rg)
         print("Frequency set successfully to cpus.")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -35,6 +35,8 @@ class cpuFreq:
             disable_cpu()
             enable_cpu()
             set_frequencies()
+            set_min_frequencies()
+            set_max_frequencies()
             set_governors()
             get_online_cpus()
             get_governors()
@@ -107,19 +109,19 @@ class cpuFreq:
 
     # interfaces
     def enable_all_cpu(self):
-        '''
+        """
         Enable all offline cpus
-        '''
+        """
         for cpu in self.__get_ranges("offline"):
             fpath = path.join("cpu%i"%cpu,"online")
             self.__write_cpu_file(fpath, b"1")
 
     def reset(self, rg=None):
-        '''
+        """
         Enable all offline cpus, and reset max and min frequencies files
 
         rg: range or list of threads to reset
-        '''
+        """
         if type(rg) == int:
             rg= [rg]
         to_reset= rg if rg else self.__get_ranges("present")
@@ -132,9 +134,9 @@ class cpuFreq:
             self.__write_cpu_file(fpath, str(min(self.available_frequencies)).encode())
 
     def disable_hyperthread(self):
-        '''
+        """
         Disable all threads attached to the same core
-        '''
+        """
         to_disable = []
         online_cpus = self.__get_ranges("online")
         for cpu in online_cpus:
@@ -147,11 +149,11 @@ class cpuFreq:
             self.__write_cpu_file(fpath, b"0")
 
     def disable_cpu(self, rg):
-        '''
+        """
         Disable cpus
 
         rg: range or list of threads to disable
-        '''
+        """
         if type(rg) == int:
             rg= [rg]
         to_disable= set(rg) & set(self.__get_ranges("online"))
@@ -160,11 +162,11 @@ class cpuFreq:
             self.__write_cpu_file(fpath, b"0")
 
     def enable_cpu(self, rg):
-        '''
+        """
         Enable cpus
 
         rg: range or list of threads to enable
-        '''
+        """
         if type(rg) == int:
             rg= [rg]
         to_disable= set(rg) & set(self.__get_ranges("offline"))
@@ -173,12 +175,12 @@ class cpuFreq:
             self.__write_cpu_file(fpath, b"1")
 
     def set_frequencies(self, freq, rg=None):
-        '''
+        """
         Set cores frequencies
 
         freq: int frequency in KHz
         rg: list of range of cores
-        '''
+        """
 
         if not type(freq) is int:
             raise(CPUFreqErrorInit("ERROR: Frequency should be a Integer value"))
@@ -196,12 +198,12 @@ class cpuFreq:
             self.__write_cpu_file(fpath, str(freq).encode())
 
     def set_max_frequencies(self, freq, rg=None):
-        '''
+        """
         Set cores max frequencies
 
         freq: int frequency in KHz
         rg: list of range of cores
-        '''
+        """
 
         if not type(freq) is int:
             raise(CPUFreqErrorInit("ERROR: Frequency should be a Integer value"))
@@ -218,12 +220,12 @@ class cpuFreq:
             self.__write_cpu_file(fpath, str(freq).encode())
 
     def set_min_frequencies(self, freq, rg=None):
-        '''
+        """
         Set cores min frequencies
 
         freq: int frequency in KHz
         rg: list of range of cores
-        '''
+        """
         if not type(freq) is int:
             raise(CPUFreqErrorInit("ERROR: Frequency should be a Integer value"))
         to_change = self.__get_ranges("online")
@@ -239,12 +241,12 @@ class cpuFreq:
             self.__write_cpu_file(fpath, str(freq).encode())
 
     def set_governors(self, gov, rg=None):
-        '''
+        """
         Set governors
 
         gov: str name of the governor
         rg: list of range of cores
-        '''
+        """
         to_change = self.__get_ranges("online")
         if type(rg) == int:
             rg= [rg]
@@ -254,32 +256,32 @@ class cpuFreq:
             self.__write_cpu_file(fpath, gov.encode())
 
     def get_online_cpus(self):
-        '''
+        """
         Get current online cpus
-        '''
+        """
         return self.__get_ranges("online")
 
     def get_governors(self):
-        '''
+        """
         Get current governors
-        '''
+        """
         return self.__get_cpu_variable("scaling_governor")
 
     def get_frequencies(self):
-        '''
+        """
         Get current frequency speed
-        '''
+        """
         freqs = self.__get_cpu_variable("scaling_cur_freq")
         for i in freqs:
             freqs[i] = int(freqs[i])
         return freqs
     
     def get_max_freq(self, rg=None):
-        '''
+        """
         Get max frequency possible
 
         rg: list of range of cores
-        '''
+        """
         to_load = self.__get_ranges("online")
         if type(rg) == int:
             rg= [rg]
@@ -291,10 +293,10 @@ class cpuFreq:
         return data
     
     def get_min_freq(self, rg=None):
-        '''
+        """
         Get min frequency possible
         rg: list of range of cores
-        '''
+        """
         to_load = self.__get_ranges("online")
         if type(rg) == int:
             rg= [rg]
