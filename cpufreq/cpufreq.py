@@ -59,7 +59,7 @@ class cpuFreq:
             "OS CPU Power driver activated (Linux ACPI " \
             "module, for example)." % cls.__name__))
         else:
-            return super(cpuFreq, cls).__new__(cls, *args, **kwargs)
+            return super().__new__(cls)
 
     def __init__(self):
         fpath = path.join("cpu0","cpufreq","scaling_driver")
