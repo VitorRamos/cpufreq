@@ -31,16 +31,17 @@ govs= cpu.get_governors()
 print(govs)
 
 available_freqs= cpu.available_frequencies
-for f in available_freqs:
+for f in available_freqs[1:]:
     cpu.set_frequencies(f)
     mfreq= []
     for _ in range(10):
         freqs= cpu.get_frequencies()
         mfreq.append(Counter(freqs))
         time.sleep(0.1)
-    print(f, sum(mfreq,Counter()))
+    print(sum(mfreq,Counter()))
     
 cpu.disable_cpu(2)
 print(cpu.get_online_cpus())
 cpu.enable_cpu(2)
 print(cpu.get_online_cpus())
+cpu.reset()
