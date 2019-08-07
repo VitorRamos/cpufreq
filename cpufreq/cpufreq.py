@@ -44,36 +44,38 @@ class cpuFreq:
     """
 
     BASEDIR = "/sys/devices/system/cpu"
+    __instance = None
 
     def __new__(cls, *args, **kwargs):
-        LINUX = sys.platform.startswith("linux")
-        DRIVERFREQ = path.isfile(path.join(cpuFreq.BASEDIR,
-                                        "cpu0",
-                                        "cpufreq",
-                                        "scaling_driver"))
-        if not LINUX:
-            raise(CPUFreqErrorInit("ERROR: %s Class should be used only on " \
-            "Linux Systems." % cls.__name__))
-        elif not DRIVERFREQ:
-            raise(CPUFreqErrorInit("ERROR: %s Class should be used only with " \
-            "OS CPU Power driver activated (Linux ACPI " \
-            "module, for example)." % cls.__name__))
-        else:
-            return super().__new__(cls)
+        if cpuFreq.__instance == None:
+            LINUX = sys.platform.startswith("linux")
+            DRIVERFREQ = path.isfile(path.join(cpuFreq.BASEDIR,
+                                            "cpu0",
+                                            "cpufreq",
+                                            "scaling_driver"))
+            if not LINUX:
+                raise(CPUFreqErrorInit("ERROR: %s Class should be used only on " \
+                "Linux Systems." % cls.__name__))
+            elif not DRIVERFREQ:
+                raise(CPUFreqErrorInit("ERROR: %s Class should be used only with " \
+                "OS CPU Power driver activated (Linux ACPI " \
+                "module, for example)." % cls.__name__))
+            else:
+                cpuFreq.__instance= super().__new__(cls)
+                fpath = path.join("cpu0","cpufreq","scaling_driver")
+                datad = cpuFreq.__instance.__read_cpu_file(fpath).rstrip("\n").split()[0]
 
-    def __init__(self):
-        fpath = path.join("cpu0","cpufreq","scaling_driver")
-        datad = self.__read_cpu_file(fpath).rstrip("\n").split()[0]
+                fpath = path.join("cpu0","cpufreq","scaling_available_governors")
+                datag = cpuFreq.__instance.__read_cpu_file(fpath).rstrip("\n").split()
 
-        fpath = path.join("cpu0","cpufreq","scaling_available_governors")
-        datag = self.__read_cpu_file(fpath).rstrip("\n").split()
+                fpath = path.join("cpu0","cpufreq","scaling_available_frequencies")
+                dataf = cpuFreq.__instance.__read_cpu_file(fpath).rstrip("\n").split()
+                
+                cpuFreq.__instance.driver = datad
+                cpuFreq.__instance.available_governors = datag
+                cpuFreq.__instance.available_frequencies = [int(f) for f in dataf]
 
-        fpath = path.join("cpu0","cpufreq","scaling_available_frequencies")
-        dataf = self.__read_cpu_file(fpath).rstrip("\n").split()
-
-        self.driver = datad
-        self.available_governors = datag
-        self.available_frequencies = [int(f) for f in dataf]
+        return cpuFreq.__instance
 
     # private
     def __read_cpu_file(self, fname):
