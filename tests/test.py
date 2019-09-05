@@ -13,14 +13,15 @@ class TestMethods(unittest.TestCase):
 
     def test_min_max(self):
         self.cpu.reset()
-        for f in self.cpu.available_frequencies:
+        for f in self.cpu.available_frequencies[1:]:
             self.cpu.set_max_frequencies(f)
             is_maxf= lambda x: x == f
             maxfs= self.cpu.get_max_freq().values()
+            print(maxfs, f)
             self.assertTrue(all(map(is_maxf,maxfs)))
         
         self.cpu.reset()
-        for f in self.cpu.available_frequencies:
+        for f in self.cpu.available_frequencies[1:]:
             self.cpu.set_min_frequencies(f)
             is_minf= lambda x: x == f
             minfs= self.cpu.get_min_freq().values()
@@ -86,7 +87,7 @@ class TestMethods(unittest.TestCase):
         freq = self.cpu.available_frequencies
         cpus = self.cpu.get_online_cpus()
 
-        for f in freq:
+        for f in freq[1:]:
             for thr in cpus:
                 nthr= thr+1
                 # print(f,nthr)
