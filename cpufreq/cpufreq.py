@@ -198,7 +198,8 @@ class cpuFreq:
         """
 
         if not isinstance(freq, int):
-            raise CPUFreqBaseError("ERROR: Frequency should be a Integer value")
+            raise CPUFreqBaseError(
+                "ERROR: Frequency should be a Integer value")
         to_change = self.__get_ranges("online")
         if isinstance(rg, int):
             rg = [rg]
@@ -207,12 +208,14 @@ class cpuFreq:
         max_freqs = self.get_max_freq()
         min_freqs = self.get_min_freq()
         for cpu in to_change:
-            if freq < min_freqs[cpu] or freq > max_freqs[cpu]:
+            fpath = path.join("cpu%i" % cpu, "cpufreq", "scaling_setspeed")
+            try:
+                self.__write_cpu_file(fpath, str(freq).encode())
+            except Exception as e:
+                print(e, freq, f"{min_freqs[cpu]} - {max_freqs[cpu]}.")
                 raise CPUFreqBaseError((f"ERROR: Frequency should be between"
                                         f"min and max frequencies interval: "
                                         f"{min_freqs[cpu]} - {max_freqs[cpu]}."))
-            fpath = path.join("cpu%i" % cpu, "cpufreq", "scaling_setspeed")
-            self.__write_cpu_file(fpath, str(freq).encode())
 
     def set_max_frequencies(self, freq, rg=None):
         """
@@ -223,7 +226,8 @@ class cpuFreq:
         """
 
         if not isinstance(freq, int):
-            raise CPUFreqBaseError("ERROR: Frequency should be a Integer value")
+            raise CPUFreqBaseError(
+                "ERROR: Frequency should be a Integer value")
         to_change = self.__get_ranges("online")
         if isinstance(rg, int):
             rg = [rg]
@@ -231,11 +235,13 @@ class cpuFreq:
             to_change = set(rg) & set(self.__get_ranges("online"))
         min_freqs = self.get_min_freq()
         for cpu in to_change:
-            if freq < min_freqs[cpu]:
+            fpath = path.join("cpu%i" % cpu, "cpufreq", "scaling_max_freq")
+            try:
+                self.__write_cpu_file(fpath, str(freq).encode())
+            except Exception as e:
+                print(e, freq, f"{min_freqs[cpu]}")
                 raise CPUFreqBaseError((f"ERROR: Frequency should be gt min "
                                         f"freq: {min_freqs[cpu]}"))
-            fpath = path.join("cpu%i" % cpu, "cpufreq", "scaling_max_freq")
-            self.__write_cpu_file(fpath, str(freq).encode())
 
     def set_min_frequencies(self, freq, rg=None):
         """
@@ -245,7 +251,8 @@ class cpuFreq:
         rg: list of range of cores
         """
         if not isinstance(freq, int):
-            raise CPUFreqBaseError("ERROR: Frequency should be a Integer value")
+            raise CPUFreqBaseError(
+                "ERROR: Frequency should be a Integer value")
         to_change = self.__get_ranges("online")
         if isinstance(rg, int):
             rg = [rg]
@@ -253,11 +260,13 @@ class cpuFreq:
             to_change = set(rg) & set(self.__get_ranges("online"))
         max_freqs = self.get_max_freq()
         for cpu in to_change:
-            if freq > max_freqs[cpu]:
+            fpath = path.join("cpu%i" % cpu, "cpufreq", "scaling_min_freq")
+            try:
+                self.__write_cpu_file(fpath, str(freq).encode())
+            except Exception as e:
+                print(e, freq, f"{max_freqs[cpu]}.")
                 raise CPUFreqBaseError((f"ERROR: Frequency should be lt max "
                                         f"freq: {max_freqs[cpu]}"))
-            fpath = path.join("cpu%i" % cpu, "cpufreq", "scaling_min_freq")
-            self.__write_cpu_file(fpath, str(freq).encode())
 
     def set_governors(self, gov, rg=None):
         """
