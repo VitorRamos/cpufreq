@@ -55,10 +55,10 @@ class cpuFreq:
                                                "cpufreq",
                                                "scaling_driver"))
             if not LINUX:
-                raise CPUFreqErrorInit("ERROR: %s Class should be used only"
+                raise CPUFreqErrorInit("ERROR: %s Class should be used only "
                                        "on Linux Systems." % cls.__name__)
             elif not DRIVERFREQ:
-                raise CPUFreqErrorInit("ERROR: %s Class should be used only"
+                raise CPUFreqErrorInit("ERROR: %s Class should be used only "
                                        "with OS CPU Power driver activated (Linux ACPI "
                                        "module, for example)." % cls.__name__)
             else:
