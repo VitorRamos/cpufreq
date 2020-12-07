@@ -14,7 +14,7 @@ Python module to control the frequency on Linux systems.
 
  - Custom CPU power managment enabled on BIOS
  - Power Management Driver installed (acpi for example)
- - Python2 or newer
+ - Python3.5 or newer
 
 ## Site
 
