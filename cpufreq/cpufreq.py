@@ -212,10 +212,10 @@ class cpuFreq:
             try:
                 self.__write_cpu_file(fpath, str(freq).encode())
             except Exception as e:
-                print(e, freq, f"{min_freqs[cpu]} - {max_freqs[cpu]}.")
-                raise CPUFreqBaseError((f"ERROR: Frequency should be between"
-                                        f"min and max frequencies interval: "
-                                        f"{min_freqs[cpu]} - {max_freqs[cpu]}."))
+                print(e, freq, "{} - {}.".format(min_freqs[cpu], max_freqs[cpu]))
+                raise CPUFreqBaseError(("ERROR: Frequency should be between"
+                                        "min and max frequencies interval: "
+                                        "{} - {}.".format(min_freqs[cpu], max_freqs[cpu])))
 
     def set_max_frequencies(self, freq, rg=None):
         """
@@ -239,9 +239,9 @@ class cpuFreq:
             try:
                 self.__write_cpu_file(fpath, str(freq).encode())
             except Exception as e:
-                print(e, freq, f"{min_freqs[cpu]}")
-                raise CPUFreqBaseError((f"ERROR: Frequency should be gt min "
-                                        f"freq: {min_freqs[cpu]}"))
+                print(e, freq, "{}".format(min_freqs[cpu]))
+                raise CPUFreqBaseError(("ERROR: Frequency should be gt min "
+                                        "freq: {}".format(min_freqs[cpu])))
 
     def set_min_frequencies(self, freq, rg=None):
         """
@@ -264,9 +264,9 @@ class cpuFreq:
             try:
                 self.__write_cpu_file(fpath, str(freq).encode())
             except Exception as e:
-                print(e, freq, f"{max_freqs[cpu]}.")
-                raise CPUFreqBaseError((f"ERROR: Frequency should be lt max "
-                                        f"freq: {max_freqs[cpu]}"))
+                print(e, freq, "{}.".format(max_freqs[cpu]))
+                raise CPUFreqBaseError(("ERROR: Frequency should be lt max "
+                                        "freq: {}".format(max_freqs[cpu])))
 
     def set_governors(self, gov, rg=None):
         """
